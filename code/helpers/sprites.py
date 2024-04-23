@@ -29,7 +29,7 @@ def create_animals():
 
 animal_sprites = pygame.sprite.Group()
 animals_data = [
-    ("1", (35, 25), (500, 500))
+    ("1", (35, 25), (400, 400))
 ]
 
 zombies_sprites = pygame.sprite.Group()

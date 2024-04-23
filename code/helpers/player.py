@@ -4,10 +4,12 @@ from helpers.sprites import animal_sprites
 
 class Player(pygame.sprite.Sprite):
 
+    # used as view area
     class temp_rect(pygame.sprite.Sprite):
         def __init__(self, player_center):
             self.image = pygame.Surface(size=(50, 50))
             self.rect = self.image.get_rect(center=player_center)
+
 
     def __init__(self):
         super().__init__()
