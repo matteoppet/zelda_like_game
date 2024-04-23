@@ -2,7 +2,7 @@ import pygame
 
 
 from helpers.player import Player
-from helpers.obstacles import obstacle_sprites, create_obstacles
+from helpers.world import World
 
 
 pygame.init()
@@ -15,8 +15,9 @@ running = True
 
 PLAYER = Player()
 
-create_obstacles()
-OBSTACLE_SPRITES = obstacle_sprites
+WORLD = World()
+obstacle_sprites = WORLD.init_obstacles()
+animals_sprites = WORLD.init_animals()
 
 
 while running:
@@ -26,9 +27,10 @@ while running:
 
     screen.fill("white")
 
-    OBSTACLE_SPRITES.draw(screen, background)
+    obstacle_sprites.draw(screen, background)
+    animals_sprites.draw(screen, background)
     
-    PLAYER.move()
+    PLAYER.actions()
     PLAYER.draw(screen)
 
     pygame.display.flip()
