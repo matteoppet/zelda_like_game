@@ -16,6 +16,8 @@ class Obstacle(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(topleft=pos)
         self.image.fill("red")
 
+        self.old_rect = self.rect.copy()
+
 
 def create_obstacles():
     for data in obstacles_data:
