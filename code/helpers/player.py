@@ -26,6 +26,8 @@ class Player(pygame.sprite.Sprite):
         self.health = 100
         self.damage = 10 # punch
 
+        self.food = 0
+
 
     def actions(self):
         keys = pygame.key.get_pressed()
@@ -79,7 +81,10 @@ class Player(pygame.sprite.Sprite):
 
         if collision:
             for sprite in collision:
-                print(sprite.name)
+                if sprite.class_sprite == "animals":
+                    self.food += 5
+                    print("Animal killed, +5 of food gained")
+
 
     def draw(self, screen):
         screen.blit(self.image, self.rect)

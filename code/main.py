@@ -6,10 +6,14 @@ from helpers.world import World
 
 
 pygame.init()
+pygame.font.init()
+
 SIZE_WINDOW = (1280, 720)
 screen = pygame.display.set_mode(SIZE_WINDOW)
 background = pygame.Surface(SIZE_WINDOW)
+
 clock = pygame.time.Clock()
+font = pygame.font.SysFont("Arial", 20)
 running = True
 
 
@@ -32,6 +36,16 @@ while running:
     
     PLAYER.actions()
     PLAYER.draw(screen)
+    
+    # display fps
+    fps_text = font.render(f"FPS: {int(clock.get_fps())}", True, "black")
+    screen.blit(fps_text, (20, 10))
+    # display health player
+    player_health_text = font.render(f'Health: {PLAYER.health}', True, "black")
+    screen.blit(player_health_text, (20,50))
+    # display owned food
+    food_text = font.render(f"Food: {PLAYER.food}", True, "black") 
+    screen.blit(food_text, (20, 90))
 
     pygame.display.flip()
 
