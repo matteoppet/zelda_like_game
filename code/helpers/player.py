@@ -24,12 +24,12 @@ class Player(pygame.sprite.Sprite):
         self.old_rect = self.rect.copy()
 
         self.health = 100
-        self.damage = 10 # punch
+        self.damage = 15 # punch
 
         self.food = 0
 
 
-    def actions(self):
+    def actions(self, attack=False, eat=False):
         keys = pygame.key.get_pressed()
         vel = 1.3
         self.old_rect = self.rect.copy()
@@ -46,9 +46,21 @@ class Player(pygame.sprite.Sprite):
         if keys[pygame.K_d]:
             self.rect.x += vel
             self.collisions("horizontal", obstacle_sprites)
-        
-        if keys[pygame.K_SPACE]:
+    
+        if attack:
             self.attack()
+
+        if eat:
+            if self.food == 0:
+                print("You don't have food")
+            elif self.health == 100:
+                print("Your health is fully recovered, no need to eat!")
+            else:
+                self.health += 10
+                self.food -= 10
+
+                if self.health >= 100:
+                    self.health = 100
 
 
     def collisions(self, direction, group_sprites):
@@ -77,13 +89,19 @@ class Player(pygame.sprite.Sprite):
 
     def attack(self):
         temp_sprite = self.temp_rect(self.rect.center)
-        collision = pygame.sprite.spritecollide(temp_sprite, animal_sprites, True)
+        collision = pygame.sprite.spritecollide(temp_sprite, animal_sprites, False)
 
         if collision:
             for sprite in collision:
-                if sprite.class_sprite == "animals":
-                    self.food += 5
-                    print("Animal killed, +5 of food gained")
+                sprite.health -= self.damage
+
+                if sprite.health <= 0:
+                    if sprite.class_sprite == "animals":
+                        self.food += 5
+                        sprite.kill()
+                        print("Animal killed, +5 of food gained")
+        else:
+            print("No enemies or animals around")
 
 
     def draw(self, screen):
