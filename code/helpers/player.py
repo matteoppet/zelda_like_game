@@ -1,6 +1,7 @@
 import pygame
-from helpers.obstacles import obstacle_sprites
-from helpers.sprites import animal_sprites
+from helpers.animals import animals_sprite
+from helpers.world import water_sprites
+from helpers.zombie import zombies_sprites
 
 class Player(pygame.sprite.Sprite):
 
@@ -14,8 +15,8 @@ class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
 
-        self.size = (20, 30)
-        pos = (200, 200)
+        self.size = (15, 25)
+        pos = (700, 500)
 
         self.image = pygame.Surface(self.size)
         self.rect = self.image.get_rect(topleft=pos)
@@ -33,19 +34,18 @@ class Player(pygame.sprite.Sprite):
         keys = pygame.key.get_pressed()
         vel = 1.3
         self.old_rect = self.rect.copy()
-
         if keys[pygame.K_w]:
             self.rect.y -= vel
-            self.collisions("vertical", obstacle_sprites)
+            self.collisions("vertical", water_sprites)
         if keys[pygame.K_s]:
             self.rect.y += vel
-            self.collisions("vertical", obstacle_sprites)
+            self.collisions("vertical", water_sprites)
         if keys[pygame.K_a]:
             self.rect.x -= vel
-            self.collisions("horizontal", obstacle_sprites)
+            self.collisions("horizontal", water_sprites)
         if keys[pygame.K_d]:
             self.rect.x += vel
-            self.collisions("horizontal", obstacle_sprites)
+            self.collisions("horizontal", water_sprites)
     
         if attack:
             self.attack()
@@ -66,7 +66,7 @@ class Player(pygame.sprite.Sprite):
     def collisions(self, direction, group_sprites):
         # video of collisions: https://youtu.be/W9uKzPFS1CI?si=BM5kFdmDDPSZhXO4
         collision = pygame.sprite.spritecollide(self, group_sprites, False)
-        
+
         if collision:
             if direction == "horizontal":
                 for sprite in collision:
@@ -89,17 +89,25 @@ class Player(pygame.sprite.Sprite):
 
     def attack(self):
         temp_sprite = self.temp_rect(self.rect.center)
-        collision = pygame.sprite.spritecollide(temp_sprite, animal_sprites, False)
+        collision_animals = pygame.sprite.spritecollide(temp_sprite, animals_sprite, False)
+        collision_zombies = pygame.sprite.spritecollide(temp_sprite, zombies_sprites, False)
 
-        if collision:
-            for sprite in collision:
-                sprite.health -= self.damage
+        if collision_animals:
+            for sprite_animal in collision_animals:
+                sprite_animal.health -= self.damage
 
-                if sprite.health <= 0:
-                    if sprite.class_sprite == "animals":
-                        self.food += 5
-                        sprite.kill()
-                        print("Animal killed, +5 of food gained")
+                if sprite_animal.health <= 0:
+                    self.food += 5
+                    sprite_animal.kill()
+                    print("Animal killed, +5 of food gained")
+        if collision_zombies:
+            for sprite_zombie in collision_zombies:
+                sprite_zombie.health -= self.damage
+
+                if sprite_zombie.health <= 0:
+                    sprite_zombie.kill()
+                    print("Zombie killed")
+
         else:
             print("No enemies or animals around")
 
