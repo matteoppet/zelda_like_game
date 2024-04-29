@@ -7,13 +7,8 @@ from helpers.world import World, ground_sprites, water_sprites
 from helpers.animals import spawn_animals, init_spawns, animals_spawns_sprite, animals_sprite
 from helpers.zombie import create_zombies, zombies_sprites
 
-class Button:
-    def __init__(self):
-        ...
+from helpers.utils import update_list_actions_to_display, LIST_ACTIONS_TO_DISPLAY
 
-    def render(self):
-        ...
-        
 
 pygame.init()
 pygame.font.init()
@@ -24,6 +19,7 @@ background = pygame.Surface(SIZE_WINDOW)
 
 clock = pygame.time.Clock()
 font = pygame.font.SysFont("Arial", 20)
+font_actions_text = pygame.font.SysFont("Arial", 15)
 running = True
 
 t0 = time.time()
@@ -61,8 +57,8 @@ while running:
 
     time_elapsed = t1 - t0
     if time_elapsed >= 120:
-        PLAYER.health -= 3
-        print("-10 of health removed for not eating")
+        PLAYER.health -= 5 
+        update_list_actions_to_display("-5 of health removed for not eating")
         t0 = t1
 
     time_elapsed_spawn_animals = t1-t0_2
@@ -70,7 +66,7 @@ while running:
         sprite_spawn = np.random.choice(spawns_sprite_list)
         pos = sprite_spawn.coordinate_to_spawn()
         spawn_animals(pos, sprite_spawn.name)
-        print("Spawned animal")
+        update_list_actions_to_display("Spawned animal")
         t0_2 = t1
 
     if not DAY:
@@ -89,6 +85,18 @@ while running:
     PLAYER.actions()
     PLAYER.draw(screen)
     
+    # display actions massages
+    rect_background_text = pygame.Rect(1200, 20, 375, 150)
+    pygame.draw.rect(screen, "black", rect_background_text)
+    start_x_text = 1210
+    start_y_text = 35
+    for text_to_display in LIST_ACTIONS_TO_DISPLAY:
+        text = font_actions_text.render(text_to_display, True, "green")
+        screen.blit(text, (start_x_text, start_y_text))
+        start_y_text += 25
+
+
+
     # display fps
     fps_text = font.render(f"FPS: {int(clock.get_fps())}", True, "black")
     screen.blit(fps_text, (20, 10))
@@ -104,3 +112,7 @@ while running:
     clock.tick(60)
 
 pygame.quit()
+
+
+
+# display notification in the up-right of the screen, always the last 5

@@ -3,6 +3,8 @@ from helpers.animals import animals_sprite
 from helpers.world import water_sprites
 from helpers.zombie import zombies_sprites
 
+from helpers.utils import update_list_actions_to_display
+
 class Player(pygame.sprite.Sprite):
 
     # used as view area
@@ -34,6 +36,7 @@ class Player(pygame.sprite.Sprite):
         keys = pygame.key.get_pressed()
         vel = 1.3
         self.old_rect = self.rect.copy()
+
         if keys[pygame.K_w]:
             self.rect.y -= vel
             self.collisions("vertical", water_sprites)
@@ -51,16 +54,26 @@ class Player(pygame.sprite.Sprite):
             self.attack()
 
         if eat:
-            if self.food == 0:
-                print("You don't have food")
-            elif self.health == 100:
-                print("Your health is fully recovered, no need to eat!")
-            else:
-                self.health += 10
-                self.food -= 10
+            self.eat()
 
-                if self.health >= 100:
-                    self.health = 100
+    
+    def eat(self):
+        if self.food == 0:
+            update_list_actions_to_display("You don't have food")
+        elif self.health == 100:
+            update_list_actions_to_display("Your health is fully recovered, no need to eat!")
+        else:
+            tot_health = 100
+            food_to_eat = tot_health - self.health
+            
+            food_copy = self.food
+
+            if food_to_eat >= self.food:
+                self.health += self.food
+                self.food -= food_copy
+            else:
+                self.health += self.food
+                self.food -= food_to_eat
 
 
     def collisions(self, direction, group_sprites):
@@ -99,17 +112,17 @@ class Player(pygame.sprite.Sprite):
                 if sprite_animal.health <= 0:
                     self.food += 5
                     sprite_animal.kill()
-                    print("Animal killed, +5 of food gained")
+                    update_list_actions_to_display("Animal killed, +5 of food gained")
         if collision_zombies:
             for sprite_zombie in collision_zombies:
                 sprite_zombie.health -= self.damage
 
                 if sprite_zombie.health <= 0:
                     sprite_zombie.kill()
-                    print("Zombie killed")
+                    update_list_actions_to_display("Zombie killed")
 
         else:
-            print("No enemies or animals around")
+            update_list_actions_to_display("No enemies or animals around")
 
 
     def draw(self, screen):

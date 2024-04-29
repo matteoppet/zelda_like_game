@@ -1,5 +1,3 @@
-from helpers.obstacles import create_obstacles, obstacle_sprites
-
 import pytmx
 import pygame
 

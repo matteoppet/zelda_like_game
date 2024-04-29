@@ -51,9 +51,8 @@ def spawn_animals(pos, spawn_name):
 
 animals_spawns_sprite = pygame.sprite.Group()
 spawns = [
-    ("1", (530, 388)),
+    ("1", (105, 147)),
     ("2", (1009, 293)),
-    ("3", (1166, 559))
 ]
 
 def init_spawns():
