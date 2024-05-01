@@ -9,9 +9,19 @@ class Player(pygame.sprite.Sprite):
 
     # used as view area
     class temp_rect(pygame.sprite.Sprite):
-        def __init__(self, player_center):
-            self.image = pygame.Surface(size=(50, 50))
-            self.rect = self.image.get_rect(center=player_center)
+        def __init__(self, player_center, orentation, player_size):
+            # positioning the area rect of attack based on the direction of the player
+            if orentation == "right":
+                pos = (player_center[0]+player_size[0], player_center[1])
+            elif orentation == "left":
+                pos = (player_center[0]-player_size[0], player_center[1])
+            elif orentation == "up":
+                pos = (player_center[0], player_center[1]-(player_size[1]/2))
+            elif orentation == "down":
+                pos = (player_center[0], player_center[1]+(player_size[1]/2))
+
+            self.image = pygame.Surface(size=player_size)
+            self.rect = self.image.get_rect(center=pos)
 
 
     def __init__(self):
@@ -31,6 +41,8 @@ class Player(pygame.sprite.Sprite):
 
         self.food = 0
 
+        self.orentation = "right"
+
 
     def actions(self, attack=False, eat=False):
         keys = pygame.key.get_pressed()
@@ -40,15 +52,19 @@ class Player(pygame.sprite.Sprite):
         if keys[pygame.K_w]:
             self.rect.y -= vel
             self.collisions("vertical", water_sprites)
+            self.orentation = "up"
         if keys[pygame.K_s]:
             self.rect.y += vel
             self.collisions("vertical", water_sprites)
+            self.orentation = "down"
         if keys[pygame.K_a]:
             self.rect.x -= vel
             self.collisions("horizontal", water_sprites)
+            self.orentation = "left"
         if keys[pygame.K_d]:
             self.rect.x += vel
             self.collisions("horizontal", water_sprites)
+            self.orentation = "right"
     
         if attack:
             self.attack()
@@ -101,7 +117,7 @@ class Player(pygame.sprite.Sprite):
 
 
     def attack(self):
-        temp_sprite = self.temp_rect(self.rect.center)
+        temp_sprite = self.temp_rect(self.rect.center, self.orentation, self.size)
         collision_animals = pygame.sprite.spritecollide(temp_sprite, animals_sprite, False)
         collision_zombies = pygame.sprite.spritecollide(temp_sprite, zombies_sprites, False)
 

@@ -42,17 +42,18 @@ class Animals(pygame.sprite.Sprite):
 
 animals_sprite = pygame.sprite.Group()
 
-def spawn_animals(pos, spawn_name):
-    x,y = pos
+def spawn_animals(list_sprite_spawn):
+    sprite_spawn = np.random.choice(list_sprite_spawn)
+    x,y = sprite_spawn.coordinate_to_spawn()
 
-    sprite_animal = Animals("animals", (15, 10), (x,y), spawn_name)
+    sprite_animal = Animals("animals", (15, 10), (x,y), sprite_spawn.name)
     animals_sprite.add(sprite_animal)
 
 
 animals_spawns_sprite = pygame.sprite.Group()
 spawns = [
     ("1", (105, 147)),
-    ("2", (1009, 293)),
+    ("2", (1409, 150)),
 ]
 
 def init_spawns():

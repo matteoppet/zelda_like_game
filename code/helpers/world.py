@@ -1,5 +1,6 @@
 import pytmx
 import pygame
+import random
 
 
 ground_sprites = pygame.sprite.Group()
@@ -47,8 +48,24 @@ class World:
                 tile = self.gameMap.get_tile_image_by_gid(gid)
                 if(tile != None):
                     screen.blit(tile, (x * self.gameMap.tilewidth, y * self.gameMap.tileheight))
-    
 
-    def init_obstacles(self):
-        create_obstacles()
-        return obstacle_sprites
+
+tree_sprites = pygame.sprite.Group()
+
+class Trees(pygame.sprite.Sprite):
+    def __init__(self, size, pos):
+        super().__init__()
+
+        self.image = pygame.Surface(size)
+        self.rect = self.image.get_rect(center=pos)
+        self.image.fill("brown")
+
+        self.health = 80
+
+
+def spawn_tree(list_ground_sprite):
+    SIZE_TREE = (10, 15)
+    
+    random_tile = random.choice(list_ground_sprite)
+    sprite_tree = Trees(SIZE_TREE, random_tile.rect.center)
+    tree_sprites.add(sprite_tree)
