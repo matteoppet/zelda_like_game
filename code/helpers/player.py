@@ -1,6 +1,6 @@
 import pygame
 from helpers.animals import animals_sprite
-from helpers.world import water_sprites
+from helpers.world import water_sprites, tree_sprites
 from helpers.zombie import zombies_sprites
 
 from helpers.utils import update_list_actions_to_display
@@ -116,26 +116,37 @@ class Player(pygame.sprite.Sprite):
                         self.rect.bottom = sprite.rect.top
 
 
+    def kill_sprite(self, sprite, text):
+        if sprite.health <= 0:
+            sprite.kill()
+            update_list_actions_to_display(text)
+
+            return True
+
     def attack(self):
         temp_sprite = self.temp_rect(self.rect.center, self.orentation, self.size)
         collision_animals = pygame.sprite.spritecollide(temp_sprite, animals_sprite, False)
         collision_zombies = pygame.sprite.spritecollide(temp_sprite, zombies_sprites, False)
+        collision_trees = pygame.sprite.spritecollide(temp_sprite, tree_sprites, False)
 
         if collision_animals:
             for sprite_animal in collision_animals:
                 sprite_animal.health -= self.damage
 
-                if sprite_animal.health <= 0:
+                if self.kill_sprite(sprite_animal, "Animal killed, +5 of food gained"):
                     self.food += 5
-                    sprite_animal.kill()
-                    update_list_actions_to_display("Animal killed, +5 of food gained")
+
         if collision_zombies:
             for sprite_zombie in collision_zombies:
                 sprite_zombie.health -= self.damage
 
-                if sprite_zombie.health <= 0:
-                    sprite_zombie.kill()
-                    update_list_actions_to_display("Zombie killed")
+                self.kill_sprite(sprite_zombie, "Zombie killed")
+
+        if collision_trees:
+            for sprite_tree in collision_trees:
+                sprite_tree.health -= self.damage
+
+                self.kill_sprite(sprite_tree, "Tree cutted, +5 of wood")
 
         else:
             update_list_actions_to_display("No enemies or animals around")

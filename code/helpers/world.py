@@ -5,6 +5,7 @@ import random
 
 ground_sprites = pygame.sprite.Group()
 water_sprites = pygame.sprite.Group()
+spawn_trees_sprites = pygame.sprite.Group()
 
 
 class Tile(pygame.sprite.Sprite):
@@ -41,6 +42,8 @@ class World:
                         ground_sprites.add(sprite)
                     elif layer_name == "water": 
                         water_sprites.add(sprite)
+                    elif layer_name == "spawn_trees":
+                        spawn_trees_sprites.add(sprite)
 
     def draw_map(self, screen):
         for layer in self.gameMap.visible_layers:
@@ -51,6 +54,8 @@ class World:
 
 
 tree_sprites = pygame.sprite.Group()
+SIZE_TREE = (10, 40)
+trees_spawn_position = []
 
 class Trees(pygame.sprite.Sprite):
     def __init__(self, size, pos):
@@ -64,8 +69,9 @@ class Trees(pygame.sprite.Sprite):
 
 
 def spawn_tree(list_ground_sprite):
-    SIZE_TREE = (10, 15)
     
     random_tile = random.choice(list_ground_sprite)
+    trees_spawn_position.append(random_tile.rect.center)
+
     sprite_tree = Trees(SIZE_TREE, random_tile.rect.center)
     tree_sprites.add(sprite_tree)

@@ -1,27 +1,15 @@
 import pygame
 import time
-import numpy as np
-import random
 
 from helpers.player import Player
-from helpers.world import World, ground_sprites, water_sprites, Trees, tree_sprites, spawn_tree
+from helpers.world import World, ground_sprites, water_sprites, tree_sprites, spawn_tree, spawn_trees_sprites
 from helpers.animals import spawn_animals, init_spawns, animals_spawns_sprite, animals_sprite
 from helpers.zombie import create_zombies, zombies_sprites
 
-from helpers.utils import update_list_actions_to_display, LIST_ACTIONS_TO_DISPLAY
+from helpers.utils import update_list_actions_to_display, display_action_massages
 
+from __init__ import SCREEN, BACKGROUND, CLOCK, FONT_ACTIONS_TEXT, FONT
 
-pygame.init()
-pygame.font.init()
-
-SIZE_WINDOW = (1600, 960)
-screen = pygame.display.set_mode(SIZE_WINDOW)
-background = pygame.Surface(SIZE_WINDOW)
-
-clock = pygame.time.Clock()
-font = pygame.font.SysFont("Arial", 20)
-font_actions_text = pygame.font.SysFont("Arial", 15)
-running = True
 
 t0 = time.time()
 t0_2 = time.time()
@@ -36,26 +24,33 @@ WORLD.create_map()
 ground_sprites=ground_sprites
 list_ground_sprites = [sprite for sprite in ground_sprites]
 water_sprites=water_sprites
+spawn_trees_sprites = spawn_trees_sprites
+list_spawn_trees_sprites = [sprite for sprite in spawn_trees_sprites]
 
 init_spawns()
 animals_spawns_sprite = animals_spawns_sprite
 spawns_sprite_list = animals_spawns_sprite.sprites()
 
 COUNT_TREES = 0
-MAX_TREES = 15
-SIZE_TREE = (10, 15)
+MAX_TREES = 60
+
+COUNT_ANIMALS = 0
+MAX_ANIMALS = 15
 
 for _ in range(MAX_TREES):
-    spawn_tree()
+    spawn_tree(list_spawn_trees_sprites)
+    COUNT_TREES = 60
 
 DAY = True
 
+
+running = True
 while running:
     t1 = time.time()
 
-    screen.fill("white")
+    SCREEN.fill("white")
 
-    WORLD.draw_map(screen)
+    WORLD.draw_map(SCREEN)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -70,21 +65,22 @@ while running:
         if event.type == pygame.MOUSEBUTTONDOWN:
             print(pygame.mouse.get_pos())
 
-    # PLAYER HEALTH TIMER
+    # NOTE: PLAYER HEALTH TIMER
     time_elapsed = t1 - t0
     if time_elapsed >= 120:
         PLAYER.health -= 5 
         update_list_actions_to_display("-5 of health removed for not eating")
         t0 = t1
     
-    # SPAWN ANIMALS TIMER
+    # NOTE: SPAWN ANIMALS TIMER
     time_elapsed_spawn_animals = t1-t0_2
-    if time_elapsed_spawn_animals >= 60:
+    if time_elapsed_spawn_animals >= 60 and COUNT_ANIMALS != MAX_ANIMALS:
         spawn_animals(spawns_sprite_list)
+        COUNT_ANIMALS += 1
         update_list_actions_to_display("Spawned animal")
         t0_2 = t1
     
-    # CICLE DAY/NIGHT TIMER
+    # NOTE: CICLE DAY/NIGHT TIMER
     time_day_elapsed = t1 - t_day
     if time_day_elapsed >= 240:
         DAY = False
@@ -92,56 +88,47 @@ while running:
         # todo: create zombies in ordes
         create_zombies(5)
         t_day = t1
-    
     if DAY == False:
         if time_day_elapsed >= 30:
             DAY = True
             update_list_actions_to_display("Day has come!! Prepare for the night")
             t_day= t1
-
+    
+    # NOTE: SPAWN TREES
     time_trees_elapsed = t1 - t_trees
     if time_trees_elapsed >= 300 and COUNT_TREES != MAX_TREES:
-        spawn_tree()
+        spawn_tree(list_spawn_trees_sprites)
         update_list_actions_to_display("Trees spawned on a random map point")
         t_trees = t1
         COUNT_TREES += 1
 
-    #obstacle_sprites.draw(screen, background)
-    animals_spawns_sprite.draw(screen, background)
-    animals_sprite.draw(screen, background)
-    zombies_sprites.draw(screen, background)
-    tree_sprites.draw(screen, background)
+
+    animals_spawns_sprite.draw(SCREEN, BACKGROUND)
+    animals_sprite.draw(SCREEN, BACKGROUND)
+    zombies_sprites.draw(SCREEN, BACKGROUND)
+    tree_sprites.draw(SCREEN, BACKGROUND)
 
     PLAYER.actions()
-    PLAYER.draw(screen)
+    PLAYER.draw(SCREEN)
 
     for zombie in zombies_sprites:
         zombie.area_to_attack(PLAYER.rect)
     
-    # display actions massages
-    rect_background_text = pygame.Rect(1210, 800, 375, 150)
-    pygame.draw.rect(screen, "black", rect_background_text)
-    start_x_text = rect_background_text.x + 10
-    start_y_text = rect_background_text.y + 15
-    for text_to_display in LIST_ACTIONS_TO_DISPLAY:
-        text = font_actions_text.render(text_to_display, True, "green")
-        screen.blit(text, (start_x_text, start_y_text))
-        start_y_text += 25
-
+    display_action_massages(SCREEN, FONT_ACTIONS_TEXT)
 
     # display fps
-    fps_text = font.render(f"FPS: {int(clock.get_fps())}", True, "black")
-    screen.blit(fps_text, (20, 10))
+    fps_text = FONT.render(f"FPS: {int(CLOCK.get_fps())}", True, "black")
+    SCREEN.blit(fps_text, (20, 10))
     # display health player
-    player_health_text = font.render(f'Health: {PLAYER.health}', True, "black")
-    screen.blit(player_health_text, (20,50))
+    player_health_text = FONT.render(f'Health: {PLAYER.health}', True, "black")
+    SCREEN.blit(player_health_text, (20,50))
     # display owned food
-    food_text = font.render(f"Food: {PLAYER.food}", True, "black") 
-    screen.blit(food_text, (20, 90))
+    food_text = FONT.render(f"Food: {PLAYER.food}", True, "black") 
+    SCREEN.blit(food_text, (20, 90))
 
     pygame.display.flip()
 
-    clock.tick(60)
+    CLOCK.tick(60)
 
 pygame.quit()
 
