@@ -49,7 +49,15 @@ button_to_open_inventory = Button_to_open_inventory()
 INVENTORY_OPENED = False
 INVENTORY = Inventory()
 
-INTERACTION_NPCs = False
+
+def draw_sprites():
+    tree_sprites.draw(SCREEN, BACKGROUND)
+    animals_sprite.draw(SCREEN, BACKGROUND)
+    zombies_sprites.draw(SCREEN, BACKGROUND)
+
+    for NPC in NPCs_sprite_group:
+        NPC.draw(SCREEN)
+
 
 running = True
 while running:
@@ -64,8 +72,6 @@ while running:
                 PLAYER.actions(attack=True)
             if event.key == pygame.K_e:
                 PLAYER.actions(eat=True)
-            if event.key == pygame.K_t:
-                INTERACTION_NPCs = True
 
 
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -130,22 +136,17 @@ while running:
 
     animals_spawns_sprite.draw(SCREEN, BACKGROUND)
     
-    if overlapping(PLAYER, tree_sprites) or overlapping(PLAYER, animals_sprite) or overlapping(PLAYER, zombies_sprites):
+    if overlapping(PLAYER, tree_sprites) or overlapping(PLAYER, animals_sprite) or overlapping(PLAYER, zombies_sprites) or overlapping(PLAYER, NPCs_sprite_group):
         PLAYER.draw(SCREEN)
-        tree_sprites.draw(SCREEN, BACKGROUND)
-        animals_sprite.draw(SCREEN, BACKGROUND)
-        zombies_sprites.draw(SCREEN, BACKGROUND)
+        draw_sprites()
     else:
-        tree_sprites.draw(SCREEN, BACKGROUND)
-        animals_sprite.draw(SCREEN, BACKGROUND)
-        zombies_sprites.draw(SCREEN, BACKGROUND)
+        draw_sprites()
         PLAYER.draw(SCREEN)
-    
-    for NPC in NPCs_sprite_group:
-        NPC.draw(SCREEN)
 
-        if INTERACTION_NPCs:
-            NPC.interaction_section(PLAYER, SCREEN, FONT_SIZE_15, SIZE_WINDOW[1])
+
+    for NPC in NPCs_sprite_group:
+        NPC.interaction_section(PLAYER, SCREEN, FONT_SIZE_15, FONT_SIZE_10, SIZE_WINDOW[1])
+    
 
     SCREEN.blit(button_to_open_inventory.image, (button_to_open_inventory.rect.x, button_to_open_inventory.rect.y))
     inventory_text = FONT_SIZE_10.render("Inventory", True, "white")

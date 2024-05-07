@@ -46,7 +46,7 @@ class Player(pygame.sprite.Sprite):
 
         self.orientation = "right"
         self.cooldown = 500
-        self.last = pygame.time.get_ticks()
+        self.last_timing = pygame.time.get_ticks()
 
 
     def actions(self, attack=False, eat=False):
@@ -72,10 +72,10 @@ class Player(pygame.sprite.Sprite):
             self.orientation = "right"
     
         if attack:
-            now = pygame.time.get_ticks()
-            if now - self.last >= self.cooldown:
+            now_timing = pygame.time.get_ticks()
+            if now_timing - self.last_timing >= self.cooldown:
                 self.attack()
-                self.last = now
+                self.last = now_timing
             else:
                 print("Cooldown timing, wait")
 
