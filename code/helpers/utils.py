@@ -20,3 +20,12 @@ def display_action_massages(screen, font_actions_text):
         text = font_actions_text.render(text_to_display, True, "green")
         screen.blit(text, (start_x_text, start_y_text))
         start_y_text += 25
+
+
+def overlapping(sprite_player, group):
+    collision = pygame.sprite.spritecollide(sprite_player, group, False)
+
+    if collision:
+        for sprite in collision:
+            if sprite_player.rect.bottomleft[1] < sprite.rect.bottomleft[1]:
+                return True

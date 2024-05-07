@@ -69,9 +69,16 @@ class Trees(pygame.sprite.Sprite):
 
 
 def spawn_tree(list_ground_sprite):
-    
-    random_tile = random.choice(list_ground_sprite)
-    trees_spawn_position.append(random_tile.rect.center)
+    r = True
+    while r:
+        random_tile = random.choice(list_ground_sprite)
 
-    sprite_tree = Trees(SIZE_TREE, random_tile.rect.center)
-    tree_sprites.add(sprite_tree)
+        if random_tile.rect.center in trees_spawn_position:
+            random_tile = random.choice(list_ground_sprite)
+        else:
+            trees_spawn_position.append(random_tile.rect.center)
+
+            sprite_tree = Trees(SIZE_TREE, random_tile.rect.center)
+            tree_sprites.add(sprite_tree)
+            r = False
+            

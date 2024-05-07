@@ -1,7 +1,9 @@
 import pygame
-from helpers.animals import animals_sprite
+from helpers.sprites.animals import animals_sprite
 from helpers.world import water_sprites, tree_sprites
-from helpers.zombie import zombies_sprites
+from helpers.sprites.zombie import zombies_sprites
+from helpers.inventory import Inventory
+from functionality import COUNT_OBJECTS_ON_MAPS
 
 from helpers.utils import update_list_actions_to_display
 
@@ -9,19 +11,20 @@ class Player(pygame.sprite.Sprite):
 
     # used as view area
     class temp_rect(pygame.sprite.Sprite):
-        def __init__(self, player_center, orentation, player_size):
+        def __init__(self, player_center, orientation, player_size):
             # positioning the area rect of attack based on the direction of the player
-            if orentation == "right":
+            if orientation == "right":
                 pos = (player_center[0]+player_size[0], player_center[1])
-            elif orentation == "left":
+            elif orientation == "left":
                 pos = (player_center[0]-player_size[0], player_center[1])
-            elif orentation == "up":
+            elif orientation == "up":
                 pos = (player_center[0], player_center[1]-(player_size[1]/2))
-            elif orentation == "down":
+            elif orientation == "down":
                 pos = (player_center[0], player_center[1]+(player_size[1]/2))
 
             self.image = pygame.Surface(size=player_size)
             self.rect = self.image.get_rect(center=pos)
+
 
 
     def __init__(self):
@@ -41,7 +44,9 @@ class Player(pygame.sprite.Sprite):
 
         self.food = 0
 
-        self.orentation = "right"
+        self.orientation = "right"
+        self.cooldown = 500
+        self.last = pygame.time.get_ticks()
 
 
     def actions(self, attack=False, eat=False):
@@ -52,29 +57,36 @@ class Player(pygame.sprite.Sprite):
         if keys[pygame.K_w]:
             self.rect.y -= vel
             self.collisions("vertical", water_sprites)
-            self.orentation = "up"
+            self.orientation = "up"
         if keys[pygame.K_s]:
             self.rect.y += vel
             self.collisions("vertical", water_sprites)
-            self.orentation = "down"
+            self.orientation = "down"
         if keys[pygame.K_a]:
             self.rect.x -= vel
             self.collisions("horizontal", water_sprites)
-            self.orentation = "left"
+            self.orientation = "left"
         if keys[pygame.K_d]:
             self.rect.x += vel
             self.collisions("horizontal", water_sprites)
-            self.orentation = "right"
+            self.orientation = "right"
     
         if attack:
-            self.attack()
+            now = pygame.time.get_ticks()
+            if now - self.last >= self.cooldown:
+                self.attack()
+                self.last = now
+            else:
+                print("Cooldown timing, wait")
 
         if eat:
             self.eat()
 
     
     def eat(self):
-        if self.food == 0:
+        food = Inventory.INVENTORY["food"]
+
+        if food == 0:
             update_list_actions_to_display("You don't have food")
         elif self.health == 100:
             update_list_actions_to_display("Your health is fully recovered, no need to eat!")
@@ -85,11 +97,11 @@ class Player(pygame.sprite.Sprite):
             food_copy = self.food
 
             if food_to_eat >= self.food:
-                self.health += self.food
-                self.food -= food_copy
+                self.health += food
+                Inventory.INVENTORY["food"] -= food_copy
             else:
-                self.health += self.food
-                self.food -= food_to_eat
+                self.health += food
+                Inventory.INVENTORY["food"] -= food_to_eat
 
 
     def collisions(self, direction, group_sprites):
@@ -124,7 +136,7 @@ class Player(pygame.sprite.Sprite):
             return True
 
     def attack(self):
-        temp_sprite = self.temp_rect(self.rect.center, self.orentation, self.size)
+        temp_sprite = self.temp_rect(self.rect.center, self.orientation, self.size)
         collision_animals = pygame.sprite.spritecollide(temp_sprite, animals_sprite, False)
         collision_zombies = pygame.sprite.spritecollide(temp_sprite, zombies_sprites, False)
         collision_trees = pygame.sprite.spritecollide(temp_sprite, tree_sprites, False)
@@ -134,7 +146,8 @@ class Player(pygame.sprite.Sprite):
                 sprite_animal.health -= self.damage
 
                 if self.kill_sprite(sprite_animal, "Animal killed, +5 of food gained"):
-                    self.food += 5
+                    Inventory.INVENTORY["food"] += 5
+                    COUNT_OBJECTS_ON_MAPS["animals"] -= 1
 
         if collision_zombies:
             for sprite_zombie in collision_zombies:
@@ -146,7 +159,11 @@ class Player(pygame.sprite.Sprite):
             for sprite_tree in collision_trees:
                 sprite_tree.health -= self.damage
 
-                self.kill_sprite(sprite_tree, "Tree cutted, +5 of wood")
+                if self.kill_sprite(sprite_tree, "Tree cutted, +5 of wood"):
+                    Inventory.INVENTORY["wood"] += 5
+                    COUNT_OBJECTS_ON_MAPS["trees"] -= 1
+
+                
 
         else:
             update_list_actions_to_display("No enemies or animals around")

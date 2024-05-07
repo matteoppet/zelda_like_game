@@ -1,21 +1,28 @@
 import pygame
 import time
 
-from helpers.player import Player
+from helpers.sprites.player import Player
 from helpers.world import World, ground_sprites, water_sprites, tree_sprites, spawn_tree, spawn_trees_sprites
-from helpers.animals import spawn_animals, init_spawns, animals_spawns_sprite, animals_sprite
-from helpers.zombie import create_zombies, zombies_sprites
+from helpers.sprites.animals import spawn_animals, init_spawns, animals_spawns_sprite, animals_sprite
+from helpers.sprites.zombie import create_zombies, zombies_sprites
+from helpers.inventory import Button_to_open_inventory, Inventory
+from functionality import *
+from helpers.utils import update_list_actions_to_display, display_action_massages, overlapping
+from helpers.sprites.NPCs import Gildermont, Murwood, NPCs_sprite_group
 
-from helpers.utils import update_list_actions_to_display, display_action_massages
+from __init__ import SCREEN, BACKGROUND, CLOCK, FONT_SIZE_10, FONT_SIZE_15, FONT_SIZE_20, SIZE_WINDOW
 
-from __init__ import SCREEN, BACKGROUND, CLOCK, FONT_ACTIONS_TEXT, FONT
-
-
+# Timers initialization
 t0 = time.time()
 t0_2 = time.time()
 t_day = time.time()
 t_zombies = time.time()
 t_trees = time.time()
+
+GILDERMONT = Gildermont()
+MURWOOD = Murwood()
+NPCs_sprite_group.add(GILDERMONT)
+NPCs_sprite_group.add(MURWOOD)
 
 PLAYER = Player()
 
@@ -31,26 +38,22 @@ init_spawns()
 animals_spawns_sprite = animals_spawns_sprite
 spawns_sprite_list = animals_spawns_sprite.sprites()
 
-COUNT_TREES = 0
-MAX_TREES = 60
-
-COUNT_ANIMALS = 0
-MAX_ANIMALS = 15
-
-for _ in range(MAX_TREES):
+for _ in range(MAX_TREES_TO_SPAWN):
     spawn_tree(list_spawn_trees_sprites)
-    COUNT_TREES = 60
+    COUNT_OBJECTS_ON_MAPS["trees"] = MAX_TREES_TO_SPAWN
+START_TIMER_TREE = False
 
 DAY = True
 
+button_to_open_inventory = Button_to_open_inventory()
+INVENTORY_OPENED = False
+INVENTORY = Inventory()
+
+INTERACTION_NPCs = False
 
 running = True
 while running:
     t1 = time.time()
-
-    SCREEN.fill("white")
-
-    WORLD.draw_map(SCREEN)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -59,12 +62,28 @@ while running:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 PLAYER.actions(attack=True)
-            if event.key == pygame.K_l:
+            if event.key == pygame.K_e:
                 PLAYER.actions(eat=True)
+            if event.key == pygame.K_t:
+                INTERACTION_NPCs = True
+
 
         if event.type == pygame.MOUSEBUTTONDOWN:
+            pos_mouse = pygame.mouse.get_pos()
+            rect_mouse = pygame.Rect(pos_mouse[0], pos_mouse[1], 1, 1)
+
+            if button_to_open_inventory.rect.colliderect(rect_mouse):
+                print("Open inventory")
+                INVENTORY_OPENED = True
+            else:
+                INVENTORY_OPENED = False
+            
             print(pygame.mouse.get_pos())
 
+    PLAYER.actions()
+
+    #################################################### Timers section
+    
     # NOTE: PLAYER HEALTH TIMER
     time_elapsed = t1 - t0
     if time_elapsed >= 120:
@@ -74,12 +93,21 @@ while running:
     
     # NOTE: SPAWN ANIMALS TIMER
     time_elapsed_spawn_animals = t1-t0_2
-    if time_elapsed_spawn_animals >= 60 and COUNT_ANIMALS != MAX_ANIMALS:
+    if time_elapsed_spawn_animals >= 60 and COUNT_OBJECTS_ON_MAPS["animals"] != MAX_ANIMALS_TO_SPAWN:
         spawn_animals(spawns_sprite_list)
-        COUNT_ANIMALS += 1
+        COUNT_OBJECTS_ON_MAPS["animals"] += 1
         update_list_actions_to_display("Spawned animal")
         t0_2 = t1
-    
+
+    # NOTE: SPAWN TREES
+    time_trees_elapsed = t1 - t_trees
+    if time_trees_elapsed >= 100 and COUNT_OBJECTS_ON_MAPS["trees"] != MAX_TREES_TO_SPAWN:
+        spawn_tree(list_spawn_trees_sprites)
+        update_list_actions_to_display("Trees spawned on a random map point")
+        t_trees = t1
+        COUNT_OBJECTS_ON_MAPS["trees"] += 1
+
+
     # NOTE: CICLE DAY/NIGHT TIMER
     time_day_elapsed = t1 - t_day
     if time_day_elapsed >= 240:
@@ -88,43 +116,56 @@ while running:
         # todo: create zombies in ordes
         create_zombies(5)
         t_day = t1
+
     if DAY == False:
         if time_day_elapsed >= 30:
             DAY = True
             update_list_actions_to_display("Day has come!! Prepare for the night")
             t_day= t1
-    
-    # NOTE: SPAWN TREES
-    time_trees_elapsed = t1 - t_trees
-    if time_trees_elapsed >= 300 and COUNT_TREES != MAX_TREES:
-        spawn_tree(list_spawn_trees_sprites)
-        update_list_actions_to_display("Trees spawned on a random map point")
-        t_trees = t1
-        COUNT_TREES += 1
 
+    ##################################################### Draw section
+
+    SCREEN.fill("white")
+    WORLD.draw_map(SCREEN)
 
     animals_spawns_sprite.draw(SCREEN, BACKGROUND)
-    animals_sprite.draw(SCREEN, BACKGROUND)
-    zombies_sprites.draw(SCREEN, BACKGROUND)
-    tree_sprites.draw(SCREEN, BACKGROUND)
+    
+    if overlapping(PLAYER, tree_sprites) or overlapping(PLAYER, animals_sprite) or overlapping(PLAYER, zombies_sprites):
+        PLAYER.draw(SCREEN)
+        tree_sprites.draw(SCREEN, BACKGROUND)
+        animals_sprite.draw(SCREEN, BACKGROUND)
+        zombies_sprites.draw(SCREEN, BACKGROUND)
+    else:
+        tree_sprites.draw(SCREEN, BACKGROUND)
+        animals_sprite.draw(SCREEN, BACKGROUND)
+        zombies_sprites.draw(SCREEN, BACKGROUND)
+        PLAYER.draw(SCREEN)
+    
+    for NPC in NPCs_sprite_group:
+        NPC.draw(SCREEN)
 
-    PLAYER.actions()
-    PLAYER.draw(SCREEN)
+        if INTERACTION_NPCs:
+            NPC.interaction_section(PLAYER, SCREEN, FONT_SIZE_15, SIZE_WINDOW[1])
+
+    SCREEN.blit(button_to_open_inventory.image, (button_to_open_inventory.rect.x, button_to_open_inventory.rect.y))
+    inventory_text = FONT_SIZE_10.render("Inventory", True, "white")
+    SCREEN.blit(inventory_text, (button_to_open_inventory.rect.x+7, button_to_open_inventory.rect.y+7))
+
+    if INVENTORY_OPENED:
+        INVENTORY.draw(SCREEN, FONT_SIZE_20)
+        INVENTORY.show_items(SCREEN, FONT_SIZE_15)
 
     for zombie in zombies_sprites:
-        zombie.area_to_attack(PLAYER.rect)
+        zombie.area_to_attack(PLAYER)
     
-    display_action_massages(SCREEN, FONT_ACTIONS_TEXT)
+    display_action_massages(SCREEN, FONT_SIZE_15)
 
     # display fps
-    fps_text = FONT.render(f"FPS: {int(CLOCK.get_fps())}", True, "black")
+    fps_text = FONT_SIZE_20.render(f"FPS: {int(CLOCK.get_fps())}", True, "black")
     SCREEN.blit(fps_text, (20, 10))
     # display health player
-    player_health_text = FONT.render(f'Health: {PLAYER.health}', True, "black")
+    player_health_text = FONT_SIZE_20.render(f'Health: {PLAYER.health}', True, "black")
     SCREEN.blit(player_health_text, (20,50))
-    # display owned food
-    food_text = FONT.render(f"Food: {PLAYER.food}", True, "black") 
-    SCREEN.blit(food_text, (20, 90))
 
     pygame.display.flip()
 
