@@ -19,6 +19,13 @@ t_day = time.time()
 t_zombies = time.time()
 t_trees = time.time()
 
+# Timers
+timer_no_food_damage = pygame.time.get_ticks()
+timer_day_night_cicle = pygame.time.get_ticks()
+timer_zombies_spawn = pygame.time.get_ticks()
+timer_trees_spawn = pygame.time.get_ticks()
+timer_animals_spawn = pygame.time.get_ticks()
+
 GILDERMONT = Gildermont()
 MURWOOD = Murwood()
 NPCs_sprite_group.add(GILDERMONT)
@@ -61,8 +68,6 @@ def draw_sprites():
 
 running = True
 while running:
-    t1 = time.time()
-
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -85,48 +90,44 @@ while running:
             
             print(pygame.mouse.get_pos())
 
+    timer_now = pygame.time.get_ticks()
     PLAYER.actions()
 
+    t1 = time.time()
     #################################################### Timers section
     
     # NOTE: PLAYER HEALTH TIMER
-    time_elapsed = t1 - t0
-    if time_elapsed >= 120:
+    if (timer_now - timer_no_food_damage) >= 120*1000:
         PLAYER.health -= 5 
         update_list_actions_to_display("-5 of health removed for not eating")
-        t0 = t1
+        timer_no_food_damage = timer_now
     
     # NOTE: SPAWN ANIMALS TIMER
-    time_elapsed_spawn_animals = t1-t0_2
-    if time_elapsed_spawn_animals >= 60 and COUNT_OBJECTS_ON_MAPS["animals"] != MAX_ANIMALS_TO_SPAWN:
+    if (timer_now - timer_animals_spawn) >= 60*1000 and COUNT_OBJECTS_ON_MAPS["animals"] != MAX_ANIMALS_TO_SPAWN:
         spawn_animals(spawns_sprite_list)
         COUNT_OBJECTS_ON_MAPS["animals"] += 1
         update_list_actions_to_display("Spawned animal")
-        t0_2 = t1
+        timer_animals_spawn = timer_now
 
     # NOTE: SPAWN TREES
-    time_trees_elapsed = t1 - t_trees
-    if time_trees_elapsed >= 100 and COUNT_OBJECTS_ON_MAPS["trees"] != MAX_TREES_TO_SPAWN:
+    if (timer_now - timer_trees_spawn) >= 100*1000 and COUNT_OBJECTS_ON_MAPS["trees"] != MAX_TREES_TO_SPAWN:
         spawn_tree(list_spawn_trees_sprites)
         update_list_actions_to_display("Trees spawned on a random map point")
-        t_trees = t1
         COUNT_OBJECTS_ON_MAPS["trees"] += 1
-
+        timer_trees_spawn = timer_now
 
     # NOTE: CICLE DAY/NIGHT TIMER
-    time_day_elapsed = t1 - t_day
-    if time_day_elapsed >= 240:
+    if (timer_now - timer_day_night_cicle) >= 240*1000:
         DAY = False
         update_list_actions_to_display("Night has come!! Good luck")
-        # todo: create zombies in ordes
         create_zombies(5)
-        t_day = t1
+        timer_day_night_cicle = timer_now
 
     if DAY == False:
-        if time_day_elapsed >= 30:
+        if (timer_now - timer_day_night_cicle) >= 30*1000:
             DAY = True
             update_list_actions_to_display("Day has come!! Prepare for the night")
-            t_day= t1
+            timer_day_night_cicle = timer_now
 
     ##################################################### Draw section
 

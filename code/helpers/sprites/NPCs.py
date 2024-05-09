@@ -85,8 +85,12 @@ class Gildermont(NPC_base, pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         super().__init__()
+        
+        list_items_to_sell = []
+        for key in Weapons.types.keys():
+            list_items_to_sell.append(key)
 
-        self.item_to_sell = random.choice(Weapons.types)
+        self.item_to_sell = random.choice(list_items_to_sell)
 
 
     def dialogue(self):
@@ -105,7 +109,11 @@ class Murwood(NPC_base, pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         super().__init__()
 
-        self.item_to_sell = random.choice(Armors.types)
+        list_items_to_sell = []
+        for key in Armors.types.keys():
+            list_items_to_sell.append(key)
+
+        self.item_to_sell = random.choice(list_items_to_sell)
 
     def dialogue(self):
         return "Hello Mr.., I'm Murwood."

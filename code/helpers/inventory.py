@@ -1,5 +1,4 @@
 import pygame
-import pygame.newbuffer
 
 class Button_to_open_inventory:
     def __init__(self):
@@ -16,7 +15,6 @@ class Inventory:
         "armor": [],
         "gold": 0
     }
-
 
     def __init__(self):
         size = (600, 400)
@@ -85,6 +83,7 @@ class Inventory:
 
         self.INVENTORY[class_item.lower()].append(item_equipped)
         player.EQUIPMENT[class_item] = "Hands"
+
 
     def check_click_button(self, player):
         events = pygame.event.get()

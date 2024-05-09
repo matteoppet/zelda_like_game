@@ -1,31 +1,21 @@
-import pygame
 
-""" 
-Object in game:
-    - Weapons = ["Knife", "Axe", "sword"]
-    - Armors = ["Chest", "Helmet", "Gloves"]
-    - Foods = ["Apple", "Banana", "Meat"]
-"""
 
 
 class Armors:
-    types = ["chest", "helmet", "gloves"]
+    types = {
+        "Chest": 0,
+        "Helmet": 0,
+        "Gloves": 0
+    }
 
 
 class Weapons:
-    types = ["knife", "axe", "sword"]
-
-    def hands(self):
-        return {"damage": 0, "velocity": 0, "damage_trees": 0}
-
-    def axe(self):
-        return {"damage": 0, "velocity": 0, "damage_trees": 0}
-
-    def knife(self):
-        return {"damage": 0, "velocity": 0, "damage_trees": 0}
-    
-    def spade(self):
-        return {"damage": 0, "velocity": 0, "damage_trees": 0}
+    types = {
+        "Hands": {"damage": 5, "velocity": 1, "damage_trees": 5},
+        "Axe": {"damage": 15, "velocity": 3, "damage_trees": 20},
+        "Knife": {"damage": 0, "velocity": 0, "damage_trees": 0},
+        "Spade": {"damage": 0, "velocity": 0, "damage_trees": 0}
+    }
 
 
 class Foods:
