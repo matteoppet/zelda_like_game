@@ -65,8 +65,6 @@ while running:
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            
-
             running = False
 
         if event.type == pygame.KEYDOWN:
@@ -81,7 +79,6 @@ while running:
             rect_mouse = pygame.Rect(pos_mouse[0], pos_mouse[1], 1, 1)
 
             if button_to_open_inventory.rect.colliderect(rect_mouse):
-                print("Open inventory")
                 INVENTORY_OPENED = True
             else:
                 INVENTORY_OPENED = False
@@ -137,7 +134,7 @@ while running:
     WORLD.draw_map(SCREEN)
 
     animals_spawns_sprite.draw(SCREEN, BACKGROUND)
-    
+
     if overlapping(PLAYER, tree_sprites) or overlapping(PLAYER, animals_sprite) or overlapping(PLAYER, zombies_sprites) or overlapping(PLAYER, NPCs_sprite_group):
         PLAYER.draw(SCREEN)
         draw_sprites()
@@ -156,8 +153,9 @@ while running:
 
     if INVENTORY_OPENED:
         INVENTORY.draw(SCREEN, FONT_SIZE_20)
-        INVENTORY.show_items(SCREEN, FONT_SIZE_15, FONT_SIZE_10)
-        INVENTORY.show_character(SCREEN, PLAYER.EQUIPMENT, FONT_SIZE_15)
+        INVENTORY.show_character(SCREEN, PLAYER, FONT_SIZE_15, FONT_SIZE_10)
+        INVENTORY.show_items(SCREEN, FONT_SIZE_15, FONT_SIZE_10, PLAYER)
+        INVENTORY.check_click_button(PLAYER)
 
     for zombie in zombies_sprites:
         zombie.area_to_attack(PLAYER)

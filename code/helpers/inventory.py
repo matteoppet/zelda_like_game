@@ -1,4 +1,5 @@
 import pygame
+import pygame.newbuffer
 
 class Button_to_open_inventory:
     def __init__(self):
@@ -11,10 +12,11 @@ class Inventory:
     INVENTORY = {
         "wood": 0,
         "food": 0,
-        "weapons": [],
-        "armors": [],
+        "weapon": [],
+        "armor": [],
         "gold": 0
     }
+
 
     def __init__(self):
         size = (600, 400)
@@ -24,13 +26,16 @@ class Inventory:
         self.rect = self.image.get_rect(topleft=pos)
         self.image.fill("black")
 
+        self.all_buttons = {}
+
+
     def draw(self, screen, font):
         title = font.render("Inventory", True, "white")
         pygame.draw.rect(screen, "black", self.rect)
         screen.blit(title, (self.rect.x+20, self.rect.y+20))
 
-    def show_items(self, screen, font, font_2):
-        buttons_equip = {}
+
+    def show_items(self, screen, font, font_2, player):
         actual_y_pos = self.rect.y
         for key, value in self.INVENTORY.items():
             text = font.render(f"{key} = {value}", True, "white")
@@ -41,26 +46,59 @@ class Inventory:
             text_equip_button = font_2.render("equip", True, "black")
             screen.blit(text_equip_button, (rect_button_equip.topleft[0]+5, rect_button_equip.topleft[1]))
 
-            buttons_equip[key] = rect_button_equip
+            self.all_buttons[key] = rect_button_equip
 
             actual_y_pos += 20
 
 
-
-    def show_character(self, screen, EQUIPMENT, font):
+    def show_character(self, screen, player, font, font_2):
         width_rect = 200
         rect_character = pygame.Rect(self.rect.x-width_rect-10, self.rect.y, width_rect, self.rect.height)
         pygame.draw.rect(screen, "black", rect_character)
         
         start_item_y = rect_character.y+20
         start_item_x = rect_character.x+20
-        for item_equipped in EQUIPMENT:
-            text = font.render(f"{item_equipped}: {EQUIPMENT[item_equipped]}", True, "white")
+        for item_equipped in player.EQUIPMENT:
+            text = font.render(f"{item_equipped}: {player.EQUIPMENT[item_equipped]}", True, "white")
             screen.blit(text, (start_item_x, start_item_y))
+
+            rect_button_unequip = pygame.Rect(start_item_x+130, start_item_y, 45, 15)
+            pygame.draw.rect(screen, "red", rect_button_unequip)
+            text_unequip_button = font_2.render("unequip", True, "black")
+            screen.blit(text_unequip_button, (rect_button_unequip.topleft[0]+3, rect_button_unequip.topleft[1]))
+
+            self.all_buttons[item_equipped] = rect_button_unequip
 
             start_item_y += 20
 
-        
 
-    def equip_item(self):
-        ...
+    def equip_item(self, class_item, player):
+        items = self.INVENTORY[class_item]
+
+        if items != []:
+            player.EQUIPMENT[class_item.capitalize()] = items[0]
+            self.INVENTORY[class_item].remove(items[0])
+
+
+    def unequip_item(self, class_item, player):
+        item_equipped = player.EQUIPMENT[class_item]
+
+        self.INVENTORY[class_item.lower()].append(item_equipped)
+        player.EQUIPMENT[class_item] = "Hands"
+
+    def check_click_button(self, player):
+        events = pygame.event.get()
+        for class_item, rect_button in self.all_buttons.items():
+            for event in events:
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    point = (pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])
+
+                    if rect_button.collidepoint(point):
+                        
+                        # temporary solution:
+                        if rect_button.x > 500:
+                            # inventory
+                            self.equip_item(class_item, player)
+                        else:
+                            # equipped
+                            self.unequip_item(class_item, player)
