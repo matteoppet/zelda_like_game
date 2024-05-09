@@ -8,6 +8,12 @@ from functionality import COUNT_OBJECTS_ON_MAPS
 from helpers.utils import update_list_actions_to_display
 
 class Player(pygame.sprite.Sprite):
+    EQUIPMENT = {
+        "Helmet": None,
+        "Chest armor": None,
+        "Gloves": None,
+        "Weapon": "Hands"
+    }
 
     # used as view area
     class temp_rect(pygame.sprite.Sprite):
@@ -24,7 +30,6 @@ class Player(pygame.sprite.Sprite):
 
             self.image = pygame.Surface(size=player_size)
             self.rect = self.image.get_rect(center=pos)
-
 
 
     def __init__(self):
@@ -134,6 +139,7 @@ class Player(pygame.sprite.Sprite):
             update_list_actions_to_display(text)
 
             return True
+
 
     def attack(self):
         temp_sprite = self.temp_rect(self.rect.center, self.orientation, self.size)

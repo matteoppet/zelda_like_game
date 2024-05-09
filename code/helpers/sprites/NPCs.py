@@ -1,5 +1,8 @@
 import pygame
 from helpers.inventory import Inventory
+from helpers.utils import update_list_actions_to_display
+from helpers.objects import *
+import random
 
 # Gildermont = vendor weapons
 # Murwood = vendor armors
@@ -57,11 +60,13 @@ class NPC_base:
 
                         for key, value in items_in_exchange.items():
                             if Inventory.INVENTORY["wood"] >= value:
-                                print("Item comprato")
+                                Inventory.INVENTORY["wood"] -= value
+                                Inventory.INVENTORY[self.TYPE].append(key)
                                 
-                                # remove wood spended
-                                # give items in inventory
+                                update_list_actions_to_display(f"You have bought: {key} for {value} wood")
                                 # clean code
+                            else:
+                                update_list_actions_to_display(f"You don't have enought wood for: {key}")
             
 
 
@@ -74,11 +79,14 @@ class Gildermont(NPC_base, pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         super().__init__()
 
+        self.item_to_sell = random.choice(Weapons.types)
+
+
     def dialogue(self):
         return "Hello Mr.., I'm Gildermont."
     
     def items_in_exchange(self):
-        return {"Knife": 10} # 10 wood
+        return {self.item_to_sell: 10} # 10 wood
     
 
 class Murwood(NPC_base, pygame.sprite.Sprite):
@@ -90,11 +98,13 @@ class Murwood(NPC_base, pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         super().__init__()
 
+        self.item_to_sell = random.choice(Armors.types)
+
     def dialogue(self):
         return "Hello Mr.., I'm Murwood."
     
     def items_in_exchange(self):
-        return {"Helmet": 20} # 20 wood
+        return {self.item_to_sell: 20} # 20 wood
     
 
 NPCs_sprite_group = pygame.sprite.Group()

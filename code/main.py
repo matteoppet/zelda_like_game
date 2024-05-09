@@ -65,6 +65,8 @@ while running:
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
+            
+
             running = False
 
         if event.type == pygame.KEYDOWN:
@@ -155,6 +157,7 @@ while running:
     if INVENTORY_OPENED:
         INVENTORY.draw(SCREEN, FONT_SIZE_20)
         INVENTORY.show_items(SCREEN, FONT_SIZE_15)
+        INVENTORY.show_character(SCREEN, PLAYER.EQUIPMENT, FONT_SIZE_15)
 
     for zombie in zombies_sprites:
         zombie.area_to_attack(PLAYER)
