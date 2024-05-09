@@ -2,7 +2,7 @@ import pygame
 
 """ 
 Object in game:
-    - Weapons = ["Knife", "Axe", "Spade"]
+    - Weapons = ["Knife", "Axe", "sword"]
     - Armors = ["Chest", "Helmet", "Gloves"]
     - Foods = ["Apple", "Banana", "Meat"]
 """
@@ -13,7 +13,7 @@ class Armors:
 
 
 class Weapons:
-    types = ["knife", "axe", "spade"]
+    types = ["knife", "axe", "sword"]
 
     def hands(self):
         return {"damage": 0, "velocity": 0, "damage_trees": 0}

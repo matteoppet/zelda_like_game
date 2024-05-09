@@ -29,12 +29,23 @@ class Inventory:
         pygame.draw.rect(screen, "black", self.rect)
         screen.blit(title, (self.rect.x+20, self.rect.y+20))
 
-    def show_items(self, screen, font):
+    def show_items(self, screen, font, font_2):
+        buttons_equip = {}
         actual_y_pos = self.rect.y
         for key, value in self.INVENTORY.items():
             text = font.render(f"{key} = {value}", True, "white")
             screen.blit(text, (self.rect.x+20, actual_y_pos+80))
+
+            rect_button_equip = pygame.Rect(self.rect.x+150, actual_y_pos+80, 35, 15)
+            pygame.draw.rect(screen, "green", rect_button_equip)
+            text_equip_button = font_2.render("equip", True, "black")
+            screen.blit(text_equip_button, (rect_button_equip.topleft[0]+5, rect_button_equip.topleft[1]))
+
+            buttons_equip[key] = rect_button_equip
+
             actual_y_pos += 20
+
+
 
     def show_character(self, screen, EQUIPMENT, font):
         width_rect = 200
@@ -48,3 +59,8 @@ class Inventory:
             screen.blit(text, (start_item_x, start_item_y))
 
             start_item_y += 20
+
+        
+
+    def equip_item(self):
+        ...

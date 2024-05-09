@@ -156,7 +156,7 @@ while running:
 
     if INVENTORY_OPENED:
         INVENTORY.draw(SCREEN, FONT_SIZE_20)
-        INVENTORY.show_items(SCREEN, FONT_SIZE_15)
+        INVENTORY.show_items(SCREEN, FONT_SIZE_15, FONT_SIZE_10)
         INVENTORY.show_character(SCREEN, PLAYER.EQUIPMENT, FONT_SIZE_15)
 
     for zombie in zombies_sprites:
