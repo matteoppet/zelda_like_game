@@ -85,12 +85,16 @@ class Gildermont(NPC_base, pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         super().__init__()
-        
+
         list_items_to_sell = []
         for key in Weapons.types.keys():
             list_items_to_sell.append(key)
+            
+        r = True
+        while r:
+            self.item_to_sell = random.choice(list_items_to_sell)
 
-        self.item_to_sell = random.choice(list_items_to_sell)
+            if self.item_to_sell != "Hands": r = False
 
 
     def dialogue(self):

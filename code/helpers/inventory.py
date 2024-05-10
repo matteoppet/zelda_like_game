@@ -24,12 +24,16 @@ class Inventory:
         self.rect = self.image.get_rect(topleft=pos)
         self.image.fill("black")
 
+        width_rect = 200
+        self.rect_character = pygame.Rect(self.rect.x-width_rect-10, self.rect.y, width_rect, self.rect.height)
+
         self.all_buttons = {}
 
 
     def draw(self, screen, font):
         title = font.render("Inventory", True, "white")
         pygame.draw.rect(screen, "black", self.rect)
+        pygame.draw.rect(screen, "black", self.rect_character)
         screen.blit(title, (self.rect.x+20, self.rect.y+20))
 
 
@@ -50,12 +54,8 @@ class Inventory:
 
 
     def show_character(self, screen, player, font, font_2):
-        width_rect = 200
-        rect_character = pygame.Rect(self.rect.x-width_rect-10, self.rect.y, width_rect, self.rect.height)
-        pygame.draw.rect(screen, "black", rect_character)
-        
-        start_item_y = rect_character.y+20
-        start_item_x = rect_character.x+20
+        start_item_y = self.rect_character.y+20
+        start_item_x = self.rect_character.x+20
         for item_equipped in player.EQUIPMENT:
             text = font.render(f"{item_equipped}: {player.EQUIPMENT[item_equipped]}", True, "white")
             screen.blit(text, (start_item_x, start_item_y))
@@ -73,7 +73,7 @@ class Inventory:
     def equip_item(self, class_item, player):
         items = self.INVENTORY[class_item]
 
-        if items != []:
+        if isinstance(items, list):
             player.EQUIPMENT[class_item.capitalize()] = items[0]
             self.INVENTORY[class_item].remove(items[0])
 
@@ -91,7 +91,6 @@ class Inventory:
             for event in events:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     point = (pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])
-
                     if rect_button.collidepoint(point):
                         
                         # temporary solution:

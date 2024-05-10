@@ -1,5 +1,6 @@
 import pygame
 import time
+import random
 
 from helpers.sprites.player import Player
 from helpers.world import World, ground_sprites, water_sprites, tree_sprites, spawn_tree, spawn_trees_sprites
@@ -31,8 +32,6 @@ MURWOOD = Murwood()
 NPCs_sprite_group.add(GILDERMONT)
 NPCs_sprite_group.add(MURWOOD)
 
-PLAYER = Player()
-
 WORLD = World()
 WORLD.create_map()
 ground_sprites=ground_sprites
@@ -40,6 +39,9 @@ list_ground_sprites = [sprite for sprite in ground_sprites]
 water_sprites=water_sprites
 spawn_trees_sprites = spawn_trees_sprites
 list_spawn_trees_sprites = [sprite for sprite in spawn_trees_sprites]
+
+random_spawn_player = random.choice(list_spawn_trees_sprites)
+PLAYER = Player(pos=random_spawn_player.rect.center)
 
 init_spawns()
 animals_spawns_sprite = animals_spawns_sprite
@@ -53,6 +55,7 @@ START_TIMER_TREE = False
 DAY = True
 
 button_to_open_inventory = Button_to_open_inventory()
+BUTTON_INVENTORY_CLICKED = False
 INVENTORY_OPENED = False
 INVENTORY = Inventory()
 
@@ -81,12 +84,19 @@ while running:
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             pos_mouse = pygame.mouse.get_pos()
-            rect_mouse = pygame.Rect(pos_mouse[0], pos_mouse[1], 1, 1)
 
-            if button_to_open_inventory.rect.colliderect(rect_mouse):
-                INVENTORY_OPENED = True
+            if BUTTON_INVENTORY_CLICKED:
+                if INVENTORY.rect.collidepoint(pos_mouse) or INVENTORY.rect_character.collidepoint(pos_mouse):
+                    INVENTORY_OPENED = True
+                else:
+                    INVENTORY_OPENED = False
+                    BUTTON_INVENTORY_CLICKED = False
             else:
-                INVENTORY_OPENED = False
+                if button_to_open_inventory.rect.collidepoint(pos_mouse):
+                    BUTTON_INVENTORY_CLICKED = True
+                    INVENTORY_OPENED = True
+                else:
+                    INVENTORY_OPENED = False
             
             print(pygame.mouse.get_pos())
 
@@ -133,8 +143,6 @@ while running:
 
     SCREEN.fill("white")
     WORLD.draw_map(SCREEN)
-
-    animals_spawns_sprite.draw(SCREEN, BACKGROUND)
 
     if overlapping(PLAYER, tree_sprites) or overlapping(PLAYER, animals_sprite) or overlapping(PLAYER, zombies_sprites) or overlapping(PLAYER, NPCs_sprite_group):
         PLAYER.draw(SCREEN)

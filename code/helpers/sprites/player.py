@@ -33,11 +33,10 @@ class Player(pygame.sprite.Sprite):
             self.rect = self.image.get_rect(center=pos)
 
 
-    def __init__(self):
+    def __init__(self, pos):
         super().__init__()
 
         self.size = (15, 25)
-        pos = (700, 500)
 
         self.image = pygame.Surface(self.size)
         self.rect = self.image.get_rect(topleft=pos)
