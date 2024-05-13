@@ -4,7 +4,7 @@ import random
 
 from helpers.sprites.player import Player
 from helpers.world import World, ground_sprites, water_sprites, tree_sprites, spawn_tree, spawn_trees_sprites
-from helpers.sprites.animals import spawn_animals, init_spawns, animals_spawns_sprite, animals_sprite
+from helpers.sprites.animals import spawn_animals, animals_sprite
 from helpers.sprites.zombie import create_zombies, zombies_sprites
 from helpers.inventory import Button_to_open_inventory, Inventory
 from functionality import *
@@ -43,10 +43,6 @@ list_spawn_trees_sprites = [sprite for sprite in spawn_trees_sprites]
 random_spawn_player = random.choice(list_spawn_trees_sprites)
 PLAYER = Player(pos=random_spawn_player.rect.center)
 
-init_spawns()
-animals_spawns_sprite = animals_spawns_sprite
-spawns_sprite_list = animals_spawns_sprite.sprites()
-
 for _ in range(MAX_TREES_TO_SPAWN):
     spawn_tree(list_spawn_trees_sprites)
     COUNT_OBJECTS_ON_MAPS["trees"] = MAX_TREES_TO_SPAWN
@@ -59,6 +55,7 @@ BUTTON_INVENTORY_CLICKED = False
 INVENTORY_OPENED = False
 INVENTORY = Inventory()
 
+BUTTON_BUILD_PRESSED = False
 
 def draw_sprites():
     tree_sprites.draw(SCREEN, BACKGROUND)
@@ -81,6 +78,15 @@ while running:
             if event.key == pygame.K_e:
                 PLAYER.actions(eat=True)
 
+            if BUTTON_BUILD_PRESSED:
+                if event.key == pygame.K_b:
+                    update_list_actions_to_display("Build mode disabled")
+                    BUTTON_BUILD_PRESSED = False
+            else:
+                if event.key == pygame.K_b:
+                    update_list_actions_to_display("Build mode activated")
+                    BUTTON_BUILD_PRESSED = True
+
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             pos_mouse = pygame.mouse.get_pos()
@@ -101,7 +107,7 @@ while running:
             print(pygame.mouse.get_pos())
 
     timer_now = pygame.time.get_ticks()
-    PLAYER.actions()
+    PLAYER.actions(SCREEN)
 
     t1 = time.time()
     #################################################### Timers section
@@ -114,7 +120,7 @@ while running:
     
     # NOTE: SPAWN ANIMALS TIMER
     if (timer_now - timer_animals_spawn) >= 60*1000 and COUNT_OBJECTS_ON_MAPS["animals"] != MAX_ANIMALS_TO_SPAWN:
-        spawn_animals(spawns_sprite_list)
+        spawn_animals()
         COUNT_OBJECTS_ON_MAPS["animals"] += 1
         update_list_actions_to_display("Spawned animal")
         timer_animals_spawn = timer_now
@@ -154,7 +160,14 @@ while running:
 
     for NPC in NPCs_sprite_group:
         NPC.interaction_section(PLAYER, SCREEN, FONT_SIZE_15, FONT_SIZE_10, SIZE_WINDOW[1])
+
     
+    if BUTTON_BUILD_PRESSED:
+        PLAYER.actions(SCREEN, build=True)
+    
+    for animal in animals_sprite:
+        animal.sensors_position_update()
+        animal.draw_sensors(SCREEN)
 
     SCREEN.blit(button_to_open_inventory.image, (button_to_open_inventory.rect.x, button_to_open_inventory.rect.y))
     inventory_text = FONT_SIZE_10.render("Inventory", True, "white")

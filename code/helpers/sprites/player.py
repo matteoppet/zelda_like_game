@@ -5,6 +5,7 @@ from helpers.sprites.zombie import zombies_sprites
 from helpers.inventory import Inventory
 from functionality import COUNT_OBJECTS_ON_MAPS
 from ..objects import Weapons
+from helpers.building import Build
 
 from helpers.utils import update_list_actions_to_display
 
@@ -54,7 +55,7 @@ class Player(pygame.sprite.Sprite):
         self.last_timing = pygame.time.get_ticks()
 
 
-    def actions(self, attack=False, eat=False):
+    def actions(self, screen, attack=False, eat=False, build=False):
         keys = pygame.key.get_pressed()
         vel = 1.3
         self.old_rect = self.rect.copy()
@@ -87,6 +88,25 @@ class Player(pygame.sprite.Sprite):
 
         if eat:
             self.eat()
+
+        if build:
+            self.build(screen)
+
+    
+    def build(self, screen):
+        BUILD = Build()
+
+        if self.orientation == "left":
+            pos_build = (self.rect.x-50, self.rect.y)
+        elif self.orientation == "right":
+            pos_build = (self.rect.topright[0]+50, self.rect.y)
+        elif self.orientation == "up":
+            pos_build = (self.rect.x, self.rect.y-50)
+        elif self.orientation == "down":
+            pos_build = (self.rect.x, self.rect.bottomright[1]+50)
+
+        rect_to_draw, rect_to_collide = BUILD.wall(self.orientation, pos_build)
+        pygame.draw.rect(screen, "white", rect_to_draw)
 
     
     def eat(self):
