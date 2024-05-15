@@ -4,7 +4,7 @@ import random
 
 from helpers.sprites.player import Player
 from helpers.world import World, ground_sprites, water_sprites, tree_sprites, spawn_tree, spawn_trees_sprites
-from helpers.sprites.animals import spawn_animals, animals_sprite
+from helpers.sprites.animals import spawn_animals, animals_sprite, sensors_data
 from helpers.sprites.zombie import create_zombies, zombies_sprites
 from helpers.inventory import Button_to_open_inventory, Inventory
 from functionality import *
@@ -168,6 +168,11 @@ while running:
     for animal in animals_sprite:
         animal.sensors_position_update()
         animal.draw_sensors(SCREEN)
+        animal.check_collision_sensors(water_sprites)
+
+    for sensor in sensors_data:
+        if sensors_data[sensor]["point_of_collision"] != None:
+            print(f"{sensor}: {sensors_data[sensor]['distance_collision']}")
 
     SCREEN.blit(button_to_open_inventory.image, (button_to_open_inventory.rect.x, button_to_open_inventory.rect.y))
     inventory_text = FONT_SIZE_10.render("Inventory", True, "white")
