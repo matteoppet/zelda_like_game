@@ -1,0 +1,7 @@
+pygame
+numpy
+stable_baselines3
+gym
+gymnasium
+pytmx
+tensorboard

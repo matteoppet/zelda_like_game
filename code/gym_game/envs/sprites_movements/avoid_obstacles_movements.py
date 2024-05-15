@@ -3,8 +3,9 @@ import numpy as np
 from gymnasium import spaces
 import pygame
 
-from ....__init__ import SIZE_WINDOW
-from ....helpers.sprites.animals import sensors_data
+from project.code.__init__ import SIZE_WINDOW
+from project.code.helpers.sprites.animals import sensors_data
+from project.code.helpers.sprites.animals import Base_animal
 
 
 class BaseEnv(gym.Env):
@@ -16,9 +17,9 @@ class BaseEnv(gym.Env):
 
         self.action_space = spaces.Discrete(5)
 
-        low = np.array([])
-        high = np.array([])
-        shape = (0,)
+        low = np.array([0 for _ in range(10)])
+        high = np.array([SIZE_WINDOW[0], SIZE_WINDOW[1], 9999,9999,9999,9999,9999,9999,9999,9999])
+        shape = (len(high),)
         self.observation_space = spaces.Box(low=low, high=high,
                                             shape=shape, dtype=np.float32)
 
@@ -40,7 +41,7 @@ class BaseEnv(gym.Env):
         ]
 
         for index in range(len(sensors_data)):
-            obs.append(sensors_data[index+1]["distance_collision"])
+            obs.append(sensors_data[str(index+1)]["distance_collision"])
 
         return np.array(obs)
     
@@ -87,6 +88,9 @@ class BaseEnv(gym.Env):
             }
         }
 
+        if target_reached:
+            self.random_target_point()
+
         if self.render_mode == "human":
             self.render()
 
@@ -101,8 +105,18 @@ class BaseEnv(gym.Env):
         ...
 
 
+class Obstacles_sprites(pygame.sprite.Sprite):
+    def __init__(self, size, pos):
+        super().__init__()
+        pygame.sprite.Sprite.__init__(self)
+
+        self.image = pygame.Surface(size)
+        self.rect = self.image.get_rect(topleft=pos)
+
 
 class Animal_environment(BaseEnv):
+    AGENT_TO_TRAIN = Base_animal()
+
     def __init__(self, render_mode=None, obstacles=False):
         super().__init__()
 
@@ -116,18 +130,19 @@ class Animal_environment(BaseEnv):
     
 
     def window_borders_obstacles(self):
-
         info_obstacles = [
             (0, -50, self.window_size[0], 50), # up
             (0, self.window_size[1], self.window_size[0], 50), # down
-            (-50, 0, -50, self.window_size[1]), # left
+            (-50, 0, 50, self.window_size[1]), # left
             (self.window_size[0], 0, 50, self.window_size[1]) # right
         ]
 
         for obstacle in info_obstacles:
-            rect_sprite = pygame.Rect(*obstacle)
+            size = (obstacle[2], obstacle[3])
+            pos = (obstacle[0], obstacle[1])
+            sprite = Obstacles_sprites(size, pos)
 
-            self.borders_obstacles_group.add(rect_sprite)
+            self.borders_obstacles_group.add(sprite)
 
     
     def get_reward(self, distance_target_point, target_reached, agent_crashed):
@@ -145,7 +160,7 @@ class Animal_environment(BaseEnv):
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
 
-        self._agent_location = self.AGENT.random_position_spawn()
+        self._agent_location = self.AGENT.random_position_spawn(self.window_size)
         self._target_location = self.random_target_point()
 
         self.AGENT.sensors_position_update()

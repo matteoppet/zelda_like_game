@@ -33,6 +33,7 @@ model = PPO(
     "MlpPolicy",
     env,
     verbose=1,
+    batch_size=4200,
     tensorboard_log=LOGS_DIR,
     device="cpu",
     n_steps=700

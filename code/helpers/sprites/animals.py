@@ -26,7 +26,7 @@ class Base_animal:
         super().__init__()
         pos = (0,0)
 
-        self.image = pygame.Surface(self.IMAGE)
+        self.image = pygame.Surface((15, 10))
         self.image.fill("pink")
         self.rect = self.image.get_rect(topleft=pos)
 
@@ -50,7 +50,7 @@ class Base_animal:
 
     def collisions_in_gym(self, obstacles):
         for obstacle in obstacles:
-            if self.rect.colliderect(obstacle):
+            if self.rect.colliderect(obstacle.rect):
                 return True
             
     
@@ -59,6 +59,13 @@ class Base_animal:
 
         if self.rect.colliderect(temp_rect):
             return True
+        
+    
+    def random_position_spawn(self, size_window):
+        x = np.random.randint(size_window[0])
+        y = np.random.randint(size_window[1])
+
+        return (x,y)
 
 
     def sensors_position_update(self):
@@ -102,9 +109,6 @@ class Base_animal:
 
 
 class Animals(Base_animal, pygame.sprite.Sprite):
-    IMAGE = (15, 10)
-
-
     def __init__(self):
         super().__init__()
         pygame.sprite.Sprite.__init__(self)
@@ -113,7 +117,8 @@ class Animals(Base_animal, pygame.sprite.Sprite):
         x = random.randint(sprite_spawn[0]-60, sprite_spawn[0]+60)
         y = random.randint(sprite_spawn[1]-60, sprite_spawn[1]+60)
         POS = (x,y)
-
+        
+        self.image = pygame.Surface((15, 10))
         self.rect = self.image.get_rect(topleft=POS)
 
 
