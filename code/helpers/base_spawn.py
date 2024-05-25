@@ -4,12 +4,18 @@ import random
 towers_sprite_group = pygame.sprite.Group()
 
 class Sprite(pygame.sprite.Sprite):
+    
     def __init__(self, size, rect, group):
         super().__init__(group)
         pygame.sprite.Sprite.__init__(self)
 
         self.image = pygame.Surface(size)
         self.rect = rect
+
+        self.area_of_attack_rect = pygame.Rect(0, 0, 130, 130)
+        self.area_of_attack_rect.center = self.rect.center
+
+        self.cooldown = 400
 
 
 class Base:
@@ -23,6 +29,8 @@ class Base:
 
         self.create_defense_tower()
 
+        self.last_timing = pygame.time.get_ticks()
+
 
     def draw(self, screen):
         pygame.draw.rect(screen, "blue", self.area_base_rect)
@@ -31,7 +39,21 @@ class Base:
     def draw_towers(self, screen):
         for key, value in self.dict_rect_towers.items():
             pygame.draw.rect(screen, "red", value.rect)
+            # pygame.draw.rect(screen, "red", value.area_of_attack_rect)
 
+
+    def towers_defense_action(self, zombies_sprite, player):
+        for key, value in self.dict_rect_towers.items():
+            for zombie in zombies_sprite:
+                if value.area_of_attack_rect.colliderect(zombie.rect):
+
+                    now = pygame.time.get_ticks()
+                    if now-self.last_timing >= value.cooldown:
+                        zombie.kill()
+                        print("zombie killed")
+                        
+                        self.last_timing = now
+                        
 
     def create_defense_tower(self):
         self.dict_rect_towers = {}

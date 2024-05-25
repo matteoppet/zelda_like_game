@@ -158,10 +158,10 @@ while running:
             timer_trees_spawn = timer_now
 
         # NOTE: CICLE DAY/NIGHT TIMER
-        if (timer_now - timer_day_night_cicle) >= 240*1000:
+        if (timer_now - timer_day_night_cicle) >= 10*1000: #240
             DAY = False
             update_list_actions_to_display("Night has come!! Good luck")
-            create_zombies(5)
+            create_zombies(55)
             timer_day_night_cicle = timer_now
 
         if DAY == False:
@@ -195,7 +195,8 @@ while running:
 
         for sensor in sensors_data:
             if sensors_data[sensor]["point_of_collision"] != None:
-                print(f"{sensor}: {sensors_data[sensor]['distance_collision']}")
+                # print(f"{sensor}: {sensors_data[sensor]['distance_collision']}")
+                ...
 
         SCREEN.blit(button_to_open_inventory.image, (button_to_open_inventory.rect.x, button_to_open_inventory.rect.y))
         inventory_text = FONT_SIZE_10.render("Inventory", True, "white")
@@ -209,6 +210,8 @@ while running:
 
         for zombie in zombies_sprites:
             zombie.area_to_attack(PLAYER)
+
+        BASE_SPAWN.towers_defense_action(zombies_sprites, PLAYER)
         
         display_action_massages(SCREEN, FONT_SIZE_15)
 

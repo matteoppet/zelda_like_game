@@ -170,9 +170,7 @@ class Player(pygame.sprite.Sprite):
 
                 if self.kill_sprite(sprite_tree, "Tree cutted, +5 of wood"):
                     Inventory.INVENTORY["wood"] += 5
-                    COUNT_OBJECTS_ON_MAPS["trees"] -= 1
-
-                
+                    COUNT_OBJECTS_ON_MAPS["trees"] -= 1       
 
         else:
             update_list_actions_to_display("No enemies or animals around")

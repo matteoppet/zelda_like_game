@@ -69,12 +69,15 @@ class Zombies(pygame.sprite.Sprite):
 zombies_sprites = pygame.sprite.Group()
 zombies_spawns = [
     (23, 542),
-    (782, 28)
+    (782, 28),
+    (1435, 298),
+    (1179, 279),
+    (692, 431)
 ]
 
 def create_zombies(n_zombies_to_spawn):
     for _ in range(n_zombies_to_spawn):
-        random_spawn = random.choice([(3, 542), (782, 8)])
+        random_spawn = random.choice(zombies_spawns)
 
         random_x = random.randrange(random_spawn[0]-20, random_spawn[0]+20)
         random_y = random.randrange(random_spawn[1]-20, random_spawn[1]+20)
