@@ -6,16 +6,14 @@ import os
 from envs.sprites_movements.avoid_obstacles_movements import Animal_environment
 
 ### HYPER PARAMETERS
-TIMESTEPS = 1000000
+TIMESTEPS = 40000000
 N_CPU = 6
 RENDER = None
 
 def make_env():
     return Animal_environment(render_mode=None, obstacles=False)
 
-
 env = DummyVecEnv([make_env for _ in range(N_CPU)])
-
 
 MODELS_DIR = "trained_agent/models/PPO_MODELS"
 LOGS_DIR = "trained_agent/logs/PPO_LOGS"
@@ -26,6 +24,7 @@ if not os.path.exists(MODELS_DIR):
 
 if not os.path.exists(LOGS_DIR):
     os.makedirs(LOGS_DIR)
+
     print("> Logs dir created")
 
 
@@ -39,6 +38,7 @@ model = PPO(
     n_steps=700
 )
 
+
 try:
     model.learn(
         total_timesteps=TIMESTEPS,
@@ -48,4 +48,4 @@ try:
 except KeyboardInterrupt:
     print("Model training interrupted, model saved in the current timesteps")
 
-model.save(f"{MODELS_DIR}/PPO_MODEL_{TIMESTEPS}")
+model.save(f"{MODELS_DIR}/PPO_MODEL")

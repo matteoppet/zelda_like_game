@@ -27,8 +27,8 @@ class Base_animal:
         pos = (0,0)
 
         self.image = pygame.Surface((15, 10))
-        self.image.fill("pink")
-        self.rect = self.image.get_rect(topleft=pos)
+        self.image.fill("green")
+        self.rect = self.image.get_rect(center=pos)
 
         self.health = 50
 
@@ -54,11 +54,11 @@ class Base_animal:
                 return True
             
     
-    def target_reached(self, target_point):
-        temp_rect = pygame.Rect(target_point[0], target_point[1], 10, 10)
-
-        if self.rect.colliderect(temp_rect):
+    def target_reached(self, target_rect):
+        if self.rect.colliderect(target_rect):
             return True
+        
+        return False
         
     
     def random_position_spawn(self, size_window):
@@ -95,6 +95,7 @@ class Base_animal:
                 start_sensor[0]+(self.rect.width/2), 
                 start_sensor[1]+(self.rect.height/2))
 
+            collisions = {}
             for obstacle in obstacles:
                 points_collision = obstacle.rect.clipline(start_sensor, end_sensor)
 
@@ -104,8 +105,23 @@ class Base_animal:
                     distance = np.linalg.norm(
                         np.array([*start_sensor]) - np.array([*coord]))
 
+                    collisions[distance] = coord
+
+
+
                     sensors_data[sensor]["point_of_collision"] = coord
                     sensors_data[sensor]["distance_collision"] = distance
+
+            if collisions != {}:
+                collision_lessfar = min(collisions)
+                point_of_collision = collisions[collision_lessfar]
+
+                sensors_data[sensor]["point_of_collision"] = point_of_collision
+                sensors_data[sensor]["distance_collision"] = distance
+            else:
+                sensors_data[sensor]["point_of_collision"] = None
+                sensors_data[sensor]["distance_collision"] = DEFAULT_DISTANCE_COLLISION
+                
 
 
 class Animals(Base_animal, pygame.sprite.Sprite):
@@ -119,7 +135,7 @@ class Animals(Base_animal, pygame.sprite.Sprite):
         POS = (x,y)
         
         self.image = pygame.Surface((15, 10))
-        self.rect = self.image.get_rect(topleft=POS)
+        self.rect = self.image.get_rect(center=POS)
 
 
 

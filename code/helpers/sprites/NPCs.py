@@ -7,6 +7,8 @@ import random
 # Gildermont = vendor weapons
 # Murwood = vendor armors
 
+NPCs_sprite_group = pygame.sprite.Group()
+
 class NPC_base:
 
     class Area_interaction(pygame.sprite.Sprite):
@@ -125,5 +127,3 @@ class Murwood(NPC_base, pygame.sprite.Sprite):
     def items_in_exchange(self):
         return {self.item_to_sell: 20} # 20 wood
     
-
-NPCs_sprite_group = pygame.sprite.Group()
