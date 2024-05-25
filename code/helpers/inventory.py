@@ -74,15 +74,18 @@ class Inventory:
         items = self.INVENTORY[class_item]
 
         if isinstance(items, list):
-            player.EQUIPMENT[class_item.capitalize()] = items[0]
-            self.INVENTORY[class_item].remove(items[0])
+            try:
+                player.EQUIPMENT[class_item.capitalize()] = items[0]
+                self.INVENTORY[class_item].remove(items[0])
+            except IndexError: pass
 
 
     def unequip_item(self, class_item, player):
         item_equipped = player.EQUIPMENT[class_item]
-
-        self.INVENTORY[class_item.lower()].append(item_equipped)
-        player.EQUIPMENT[class_item] = "Hands"
+        
+        if item_equipped != None:
+            self.INVENTORY[class_item.lower()].append(item_equipped)
+            player.EQUIPMENT[class_item] = "Hands"
 
 
     def check_click_button(self, player):
