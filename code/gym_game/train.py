@@ -11,7 +11,7 @@ from envs.avoid_obstacles_movements import Animal_environment
 TIMESTEPS = 20000000
 N_CPU = 6
 RENDER = None
-MODEL_USED = "DQN"
+MODEL_USED = "PPO"
 
 # def make_env():
 #     return Animal_environment(render_mode=None, obstacles=False)
@@ -38,13 +38,12 @@ if not os.path.exists(LOGS_DIR):
 #     deterministic=True, render=False)
 
 
-model = DQN(
+model = PPO(
     "MlpPolicy",
     env,
     verbose=1,
     tensorboard_log=LOGS_DIR,
     device="cpu",
-    exploration_fraction=0.3
 )
 
 
@@ -52,8 +51,7 @@ try:
     model.learn(
         total_timesteps=TIMESTEPS,
         tb_log_name=MODEL_USED,
-        reset_num_timesteps=True,
-        progress_bar=True
+        reset_num_timesteps=True
     )
 except KeyboardInterrupt:
     print("Model training interrupted, model saved in the current timesteps")

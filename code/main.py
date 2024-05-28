@@ -9,7 +9,7 @@ from helpers.sprites.zombie import create_zombies, zombies_sprites
 from helpers.inventory import Button_to_open_inventory, Inventory
 from functionality import *
 from helpers.utils import update_list_actions_to_display, display_action_massages, overlapping
-from helpers.sprites.NPCs import Gildermont, Murwood, NPCs_sprite_group
+from helpers.sprites.NPCs import Gildermont, Murwood, NPC_base
 from helpers.home_screen import Home_screen
 from helpers.base_spawn import Base, towers_sprite_group
 
@@ -31,8 +31,12 @@ timer_animals_spawn = pygame.time.get_ticks()
 
 GILDERMONT = Gildermont()
 MURWOOD = Murwood()
-NPCs_sprite_group.add(GILDERMONT)
-NPCs_sprite_group.add(MURWOOD)
+NPC_BASE = NPC_base()
+NEAR_VENDORS = False
+NPC_sprite_group = pygame.sprite.Group()
+NPC_sprite_group.add(GILDERMONT)
+NPC_sprite_group.add(MURWOOD)
+
 
 WORLD = World()
 WORLD.create_map()
@@ -65,7 +69,6 @@ BUTTON_BUILD_PRESSED = False
 
 SHOW_HOME_SCREEN = False
 HOME_SCREEN = Home_screen()
-
 
 running = True
 while running:
@@ -120,8 +123,21 @@ while running:
                     else:
                         INVENTORY_OPENED = False
 
+                if NEAR_VENDORS:
+                    if NEAR_VENDORS == "armors": 
+                        MURWOOD.interaction_section(pos_mouse)
+                    else:
+                        GILDERMONT.interaction_section(pos_mouse)
+
+
+        if PLAYER.health <= 0:
+            # respawn
+            ...
+
         timer_now = pygame.time.get_ticks()
         PLAYER.actions()
+
+        NEAR_VENDORS = NPC_BASE.distance_from_vendor(PLAYER, NPC_sprite_group)
 
         t1 = time.time()
         #################################################### Timers section
@@ -166,14 +182,14 @@ while running:
 
         BASE_SPAWN.draw(SCREEN)
 
-        if overlapping(PLAYER, tree_sprites) or overlapping(PLAYER, animals_sprite) or overlapping(PLAYER, zombies_sprites) or overlapping(PLAYER, NPCs_sprite_group) or overlapping(PLAYER, towers_sprite_group):
+        if overlapping(PLAYER, tree_sprites) or overlapping(PLAYER, animals_sprite) or overlapping(PLAYER, zombies_sprites) or overlapping(PLAYER, NPC_sprite_group) or overlapping(PLAYER, towers_sprite_group):
             PLAYER.draw(SCREEN)
             tree_sprites.draw(SCREEN, BACKGROUND)
             animals_sprite.draw(SCREEN, BACKGROUND)
             zombies_sprites.draw(SCREEN, BACKGROUND)
             BASE_SPAWN.draw_towers(SCREEN)
 
-            for NPC in NPCs_sprite_group:
+            for NPC in NPC_sprite_group:
                 NPC.draw(SCREEN)
 
         else:
@@ -182,14 +198,16 @@ while running:
             zombies_sprites.draw(SCREEN, BACKGROUND)
             BASE_SPAWN.draw_towers(SCREEN)
 
-            for NPC in NPCs_sprite_group:
+            for NPC in NPC_sprite_group:
                 NPC.draw(SCREEN)
 
             PLAYER.draw(SCREEN)
 
-
-        for NPC in NPCs_sprite_group:
-            NPC.interaction_section(PLAYER, SCREEN, FONT_SIZE_15, FONT_SIZE_10, SIZE_WINDOW[1])
+        if NEAR_VENDORS:
+            if NEAR_VENDORS == "armors": 
+                MURWOOD.draw_interaction_section(SCREEN, FONT_SIZE_15, FONT_SIZE_10, SIZE_WINDOW[1])
+            else:
+                GILDERMONT.draw_interaction_section(SCREEN, FONT_SIZE_15, FONT_SIZE_10, SIZE_WINDOW[1])
         
         for animal in animals_sprite:
             animal.sensors_position_update()
@@ -212,13 +230,6 @@ while running:
             INVENTORY.functionality_character(PLAYER)
             INVENTORY.draw_character(SCREEN, PLAYER, FONT_SIZE_15, FONT_SIZE_10)
 
-            # INVENTORY.check_button_activity()
-
-            # INVENTORY.draw(SCREEN, FONT_SIZE_20)
-            # INVENTORY.show_character(SCREEN, PLAYER, FONT_SIZE_15, FONT_SIZE_10)
-            # INVENTORY.show_items(SCREEN, FONT_SIZE_15, FONT_SIZE_10, PLAYER)
-            # INVENTORY.check_click_button(PLAYER)
-
         for zombie in zombies_sprites:
             zombie.area_to_attack(PLAYER)
 
@@ -238,7 +249,3 @@ while running:
     CLOCK.tick(60)
 
 pygame.quit()
-
-
-
-# display notification in the up-right of the screen, always the last 5

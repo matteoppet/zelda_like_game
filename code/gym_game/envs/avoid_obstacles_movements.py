@@ -45,10 +45,10 @@ class BaseEnv(gym.Env):
         self.action_space = spaces.Discrete(4)
 
         low = 0
-        high = np.array([self.window_size[0], self.window_size[1], self.window_size[0], self.window_size[1], 3000, 9999,9999,9999,9999,9999,9999,9999,9999])
+        high = np.array([self.window_size[0], self.window_size[1], self.window_size[0], self.window_size[1], 3000, 9999, 9999, 9999, 9999, 9999 ,9999,9999,9999])
         shape = (len(high),)
         self.observation_space = spaces.Box(low=low, high=high,
-                                            shape=shape, dtype=np.float32)
+                                            shape=shape, dtype=np.float64)
 
         self.render_mode = render_mode
         self.window = None
@@ -56,7 +56,7 @@ class BaseEnv(gym.Env):
 
         self.AGENT = self.AGENT_TO_TRAIN
         self.step_counter = 0
-        self.max_step = 3000
+        self.max_step = 10000
 
         self.TARGET = Target()
 
@@ -91,11 +91,16 @@ class BaseEnv(gym.Env):
 
         terminated = False
         truncated = False
-        agent_crashed = self.AGENT.collisions_in_gym(self.borders_obstacles_group)
+        # agent_crashed = self.AGENT.collisions_in_gym(self.borders_obstacles_group)
         target_reached = self.AGENT.target_reached(self.TARGET.rect)
 
-        if agent_crashed:
-            terminated = True
+        agent_crashed = False
+        if self.AGENT.rect.x < 0 or (self.AGENT.rect.x+self.AGENT.rect.width) > self.window_size[0]:
+            truncated = True
+            agent_crashed = True
+        elif self.AGENT.rect.y < 0 or (self.AGENT.rect.y+self.AGENT.rect.height) > self.window_size[1]:
+            truncated = True
+            agent_crashed = True
 
         if self.step_counter == self.max_step:
             truncated = True
@@ -195,31 +200,24 @@ class Animal_environment(BaseEnv):
 
     
     def get_reward(self, target_reached, agent_crashed):   
-        completion_reward = 5000
-        crash_penalty = -4000
-
-        # reward = -self._distance_from_target * 0.5
-
-        # if target_reached:
-        #     reward += completion_reward
-
-        # if agent_crashed:
-        #     reward += crash_penalty
+        reward_distance = 0
+        completion_reward = 0
+        crash_penalty = 0
 
         if self._distance_from_target < self.last_distance:
             reward = 1 
-        else:
+        else: 
             reward = -1
 
-        if target_reached:
-            reward += completion_reward
+        if target_reached: 
+            completion_reward = completion_reward
 
-        if agent_crashed:
-            reward += crash_penalty
+        if agent_crashed: 
+            completion_reward = crash_penalty
 
         self.last_distance = self._distance_from_target
 
-        # TODO: fix
+        reward = reward_distance + completion_reward + crash_penalty
 
         return reward
 
