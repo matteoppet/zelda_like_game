@@ -36,22 +36,29 @@ class NPC_base:
         if rect_area.rect.colliderect(PLAYER.rect):
             events = pygame.event.get()
 
-            items_in_exchange, rect_button_deal = self.draw_interaction_section(screen, font, font2, size_window_y)
+            items_in_exchange, dict_rect_item_deal = self.draw_interaction_section(screen, font, font2, size_window_y)
             
-            rect_mouse = pygame.Rect(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1], 1, 1)
             for event in events:
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    clicked_button_deal_check = rect_button_deal.colliderect(rect_mouse)
-                    if clicked_button_deal_check:
+                    point_mouse = pygame.mouse.get_pos()
 
-                        for key, value in items_in_exchange.items():
-                            if Inventory.INVENTORY["wood"] >= value:
-                                Inventory.INVENTORY["wood"] -= value
-                                Inventory.INVENTORY[self.TYPE].append(key)
+                    for key, value in dict_rect_item_deal.items():
+
+                        clicked_button_deal_check = value.collidepoint(point_mouse)
+
+                        if clicked_button_deal_check:
+                            item_to_buy = key
+                            cost = items_in_exchange[key]["cost"]
+                            value = items_in_exchange[key]["type"]
+
+                            if Inventory.INVENTORY[value] >= cost:
+                                Inventory.INVENTORY[value] -= cost
+                                Inventory.INVENTORY[self.TYPE].append(item_to_buy)
                                 
-                                update_list_actions_to_display(f"You have bought: {key} for {value} wood")
+                                update_list_actions_to_display(f"You have bought: {item_to_buy} for {cost} {value}")
                             else:
-                                update_list_actions_to_display(f"You don't have enought wood for: {key}")
+                                update_list_actions_to_display(f"You don't have enought {value} for: {item_to_buy}")
+
 
 
     def draw_interaction_section(self, screen, font, font2, size_window_y):
@@ -64,66 +71,84 @@ class NPC_base:
         pygame.draw.rect(screen, "black", rect_dialogue)
         screen.blit(text_to_render, (rect_dialogue.x+10, rect_dialogue.y+10))
 
-        # Button deal
-        text_button_deal = font2.render("Accept", True, "black") 
-        rect_button_deal = pygame.Rect(rect_dialogue.bottomright[0]-40, rect_dialogue.bottomright[1]-20, 35, 15)
-        pygame.draw.rect(screen, "green", rect_button_deal)
-        screen.blit(text_button_deal, (rect_button_deal.topleft[0], rect_button_deal[1]))
 
-        # List item in exchange
         items_in_exchange = self.items_in_exchange()
-        for key, value in items_in_exchange.items():
-            item_value_exchange = font.render(f"{key} = {value} wood", True, "white")
-            screen.blit(item_value_exchange, (rect_dialogue.topleft[0]+10, rect_dialogue.topleft[1]+50))
+        start_y_row = rect_dialogue.topleft[1]+50
+        text_button_deal = font2.render("Buy", True, "black")
 
-        return items_in_exchange, rect_button_deal    
+        dict_rect_item_deal = {}
+
+        for key, value in items_in_exchange.items():
+            item_listed = font.render(f"{key} = {value['cost']} {value['type']}", True, "white")
+            screen.blit(item_listed, (rect_dialogue.topleft[0]+10, start_y_row))
+
+            rect_button_deal = pygame.Rect(rect_dialogue.topleft[0]+150, start_y_row, 30, 15)
+            pygame.draw.rect(screen, "green", rect_button_deal)
+            screen.blit(text_button_deal, (rect_button_deal.topleft[0]+5, rect_button_deal[1]))
+
+            start_y_row += 20
+            dict_rect_item_deal[key] = rect_button_deal
+
+        return items_in_exchange, dict_rect_item_deal    
 
 
 class Gildermont(NPC_base, pygame.sprite.Sprite):
     IMAGE = pygame.Surface((15, 25))
     POS_CENTER = (538, 310)
-    TYPE = "weapon"
+    TYPE = "weapons"
 
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         super().__init__()
 
-        list_items_to_sell = []
-        for key in Weapons.types.keys():
-            list_items_to_sell.append(key)
-            
-        r = True
-        while r:
-            self.item_to_sell = random.choice(list_items_to_sell)
+        self.dict_sell = self.reload_items_on_sale()
 
-            if self.item_to_sell != "Hands": r = False
+    def reload_items_on_sale(self):
+        list_items_avaible_to_sell = [key for key in Weapons.types.keys()]
+        dict_items_on_sale = {}
+
+        count = 0
+        while count <= 2:
+            random_item_picked = random.choice(list_items_avaible_to_sell)
+            dict_items_on_sale[random_item_picked] = {"cost": Weapons.types[random_item_picked]["cost"], "type": Weapons.types[random_item_picked]["type"]}
+            count += 1
+
+        return dict_items_on_sale
 
 
     def dialogue(self):
         return "Hello Mr.., I'm Gildermont."
     
+
     def items_in_exchange(self):
-        return {self.item_to_sell: 10} # 10 wood
+        return self.dict_sell
     
 
 class Murwood(NPC_base, pygame.sprite.Sprite):
     IMAGE = pygame.Surface((15, 25))
     POS_CENTER = (422, 398)
-    TYPE = "armor"
+    TYPE = "armors"
 
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         super().__init__()
 
-        list_items_to_sell = []
-        for key in Armors.types.keys():
-            list_items_to_sell.append(key)
+        self.dict_sell = self.reload_items_on_sale()
 
-        self.item_to_sell = random.choice(list_items_to_sell)
+    def reload_items_on_sale(self):
+        list_items_avaible_to_sell = [key for key in Armors.types.keys()]
+        dict_items_on_sale = {}
+
+        count = 0
+        while count <= 2:
+            random_item_picked = random.choice(list_items_avaible_to_sell)
+            dict_items_on_sale[random_item_picked] = {"cost": Armors.types[random_item_picked]["cost"], "type": Armors.types[random_item_picked]["type"]}
+            count += 1
+
+        return dict_items_on_sale
 
     def dialogue(self):
         return "Hello Mr.., I'm Murwood."
     
     def items_in_exchange(self):
-        return {self.item_to_sell: 20} # 20 wood
-    
+        return self.dict_sell

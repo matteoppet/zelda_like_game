@@ -11,8 +11,8 @@ class Inventory:
     INVENTORY = {
         "wood": 0,
         "food": 0,
-        "weapon": [],
-        "armor": [],
+        "weapons": [],
+        "armors": [],
         "gold": 0
     }
 
@@ -24,82 +24,117 @@ class Inventory:
         self.rect = self.image.get_rect(topleft=pos)
         self.image.fill("black")
 
-        width_rect = 200
+        width_rect = 230
         self.rect_character = pygame.Rect(self.rect.x-width_rect-10, self.rect.y, width_rect, self.rect.height)
 
-        self.all_buttons = {}
+        self.inventory_equip_buttons = {}
+        self.character_unequip_buttons = {}
 
 
-    def draw(self, screen, font):
-        title = font.render("Inventory", True, "white")
+    def draw_inventory(self, screen, font, font_2):
         pygame.draw.rect(screen, "black", self.rect)
-        pygame.draw.rect(screen, "black", self.rect_character)
-        screen.blit(title, (self.rect.x+20, self.rect.y+20))
 
+        # draw buttons
+        start_y_pos_buttons = self.rect.y+20
+        for button in self.inventory_equip_buttons.values():
+            button.size = (35, 15)
+            button.topleft = (self.rect.topright[0]-button.width-20, start_y_pos_buttons)
 
-    def show_items(self, screen, font, font_2, player):
-        actual_y_pos = self.rect.y
+            pygame.draw.rect(screen, "green", button)
+
+            font_equip_text = font_2.render("equip", True, "black")
+            screen.blit(font_equip_text, (button.topleft[0]+5, button.topleft[1]))
+
+            start_y_pos_buttons += 25
+        
+        # draw items
+        start_y_pos_items = self.rect.y+20
         for key, value in self.INVENTORY.items():
-            text = font.render(f"{key} = {value}", True, "white")
-            screen.blit(text, (self.rect.x+20, actual_y_pos+80))
+            items_text = font.render(f"{key} = {value}", True, "white")
+            screen.blit(items_text, (self.rect.x+20, start_y_pos_items))
 
-            rect_button_equip = pygame.Rect(self.rect.x+150, actual_y_pos+80, 35, 15)
-            pygame.draw.rect(screen, "green", rect_button_equip)
-            text_equip_button = font_2.render("equip", True, "black")
-            screen.blit(text_equip_button, (rect_button_equip.topleft[0]+5, rect_button_equip.topleft[1]))
+            start_y_pos_items += 25
 
-            self.all_buttons[key] = rect_button_equip
-
-            actual_y_pos += 20
-
-
-    def show_character(self, screen, player, font, font_2):
-        start_item_y = self.rect_character.y+20
-        start_item_x = self.rect_character.x+20
-        for item_equipped in player.EQUIPMENT:
-            text = font.render(f"{item_equipped}: {player.EQUIPMENT[item_equipped]}", True, "white")
-            screen.blit(text, (start_item_x, start_item_y))
-
-            rect_button_unequip = pygame.Rect(start_item_x+130, start_item_y, 45, 15)
-            pygame.draw.rect(screen, "red", rect_button_unequip)
-            text_unequip_button = font_2.render("unequip", True, "black")
-            screen.blit(text_unequip_button, (rect_button_unequip.topleft[0]+3, rect_button_unequip.topleft[1]))
-
-            self.all_buttons[item_equipped] = rect_button_unequip
-
-            start_item_y += 20
+    def functionality_inventory(self):
+        for key, value in self.INVENTORY.items():
+            equip_button = pygame.Rect(0, 0, 0, 0)
+            
+            self.inventory_equip_buttons[key] = equip_button
 
 
-    def equip_item(self, class_item, player):
-        items = self.INVENTORY[class_item]
 
-        if isinstance(items, list):
+    def draw_character(self, screen, player, font, font_2):
+        pygame.draw.rect(screen, "black", self.rect_character)
+
+        # draw buttons
+        start_y_pos_buttons = self.rect_character.y+20
+        for button in self.character_unequip_buttons.values():
+            button.size = (47, 15)
+            button.topleft = (self.rect_character.topright[0]-button.width-20, start_y_pos_buttons)
+
+            pygame.draw.rect(screen, "red", button)
+
+            font_equip_text = font_2.render("unequip", True, "black")
+            screen.blit(font_equip_text, (button.topleft[0]+5, button.topleft[1]))
+
+            start_y_pos_buttons += 25
+
+        # draw items
+        start_y_pos_items = self.rect_character.y+20
+        for key, value in player.EQUIPMENT.items():
+            items_text = font.render(f"{key} = {value}", True, "white")
+            screen.blit(items_text, (self.rect_character.x+20, start_y_pos_items))
+
+            start_y_pos_items += 25
+
+    
+        # TODO: fix armors text and unequip buttons 
+    
+
+    def functionality_character(self, player):
+        for key, value in player.EQUIPMENT.items():
+            unequip_button = pygame.Rect(0, 0, 0, 0)
+            
+            self.character_unequip_buttons[key] = unequip_button
+
+
+
+    def check_button_activity(self, point_mouse, player):
+        if self.rect.collidepoint(point_mouse):
+            for key, button in self.inventory_equip_buttons.items():
+
+                if button.collidepoint(point_mouse):
+                    self.equip_system(key, player)
+
+        elif self.rect_character.collidepoint(point_mouse):
+            for key, button in self.character_unequip_buttons.items():
+
+                if button.collidepoint(point_mouse):
+                    self.unequip_system(key, player)
+
+
+    def equip_system(self, class_item, player):
+        if class_item in ["armors", "weapons"]:
+            items = self.INVENTORY[class_item]
+
             try:
-                player.EQUIPMENT[class_item.capitalize()] = items[0]
-                self.INVENTORY[class_item].remove(items[0])
+                item = items[0] # take the first item in the list
+
+                player.EQUIPMENT[class_item] = item
+                self.INVENTORY[class_item].remove(item)
+
             except IndexError: pass
 
+    
+    def unequip_system(self, class_item, player):
+        items = player.EQUIPMENT[class_item]
 
-    def unequip_item(self, class_item, player):
-        item_equipped = player.EQUIPMENT[class_item]
-        
-        if item_equipped != None:
-            self.INVENTORY[class_item.lower()].append(item_equipped)
-            player.EQUIPMENT[class_item] = "Hands"
+        if isinstance(items, list):
+            item = items[0]
+            player.EQUIPMENT[class_item].remove(item)
 
+        else:
+            item = player.EQUIPMENT[class_item]
+            player.EQUIPMENT[class_item] = "hands"
 
-    def check_click_button(self, player):
-        events = pygame.event.get()
-        for class_item, rect_button in self.all_buttons.items():
-            for event in events:
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    point = (pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])
-                    if rect_button.collidepoint(point):
-                        
-                        # temporary solution:
-                        if rect_button.x > 500:
-                            # inventory
-                            self.equip_item(class_item, player)
-                        else:
-                            # equipped
-                            self.unequip_item(class_item, player)
+        self.INVENTORY[class_item].append(item)

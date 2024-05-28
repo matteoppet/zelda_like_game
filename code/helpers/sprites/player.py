@@ -11,10 +11,8 @@ from helpers.utils import update_list_actions_to_display
 
 class Player(pygame.sprite.Sprite):
     EQUIPMENT = {
-        "Helmet": None,
-        "Chest armor": None,
-        "Gloves": None,
-        "Weapon": "Hands"
+        "armors": [],
+        "weapons": "Hands"
     }
 
     # used as view area
@@ -78,7 +76,7 @@ class Player(pygame.sprite.Sprite):
             self.orientation = "right"
     
         if attack:
-            self.cooldown = Weapons.types[self.EQUIPMENT["Weapon"]]["velocity"] * 100
+            self.cooldown = Weapons.types[self.EQUIPMENT["weapons"]]["velocity"] * 100
             now_timing = pygame.time.get_ticks()
             if now_timing - self.last_timing >= self.cooldown:
                 self.attack()
@@ -152,7 +150,7 @@ class Player(pygame.sprite.Sprite):
 
         if collision_animals:
             for sprite_animal in collision_animals:
-                sprite_animal.health -= Weapons.types[self.EQUIPMENT["Weapon"]]["damage"]
+                sprite_animal.health -= Weapons.types[self.EQUIPMENT["weapons"]]["damage"]
 
                 if self.kill_sprite(sprite_animal, "Animal killed, +5 of food gained"):
                     Inventory.INVENTORY["food"] += 5
@@ -160,20 +158,17 @@ class Player(pygame.sprite.Sprite):
 
         if collision_zombies:
             for sprite_zombie in collision_zombies:
-                sprite_zombie.health -= Weapons.types[self.EQUIPMENT["Weapon"]]["damage"]
+                sprite_zombie.health -= Weapons.types[self.EQUIPMENT["weapons"]]["damage"]
 
                 self.kill_sprite(sprite_zombie, "Zombie killed")
 
         if collision_trees:
             for sprite_tree in collision_trees:
-                sprite_tree.health -= Weapons.types[self.EQUIPMENT["Weapon"]]["damage_trees"]
+                sprite_tree.health -= Weapons.types[self.EQUIPMENT["weapons"]]["damage_trees"]
 
                 if self.kill_sprite(sprite_tree, "Tree cutted, +5 of wood"):
                     Inventory.INVENTORY["wood"] += 5
                     COUNT_OBJECTS_ON_MAPS["trees"] -= 1       
-
-        else:
-            update_list_actions_to_display("No enemies or animals around")
 
 
     def draw(self, screen):

@@ -1,22 +1,27 @@
-from stable_baselines3 import PPO
+from stable_baselines3 import PPO, A2C, SAC, DQN
 from stable_baselines3.common.vec_env import DummyVecEnv
+from stable_baselines3.common.callbacks import EvalCallback
+from stable_baselines3.common.env_util import make_vec_env
 
 import os
 
-from envs.sprites_movements.avoid_obstacles_movements import Animal_environment
+from envs.avoid_obstacles_movements import Animal_environment
 
 ### HYPER PARAMETERS
-TIMESTEPS = 40000000
+TIMESTEPS = 20000000
 N_CPU = 6
 RENDER = None
+MODEL_USED = "DQN"
 
-def make_env():
-    return Animal_environment(render_mode=None, obstacles=False)
+# def make_env():
+#     return Animal_environment(render_mode=None, obstacles=False)
 
-env = DummyVecEnv([make_env for _ in range(N_CPU)])
+# env = DummyVecEnv([make_env for _ in range(N_CPU)])
+# eval_env = DummyVecEnv([make_env for _ in range(N_CPU)])
 
-MODELS_DIR = "trained_agent/models/PPO_MODELS"
-LOGS_DIR = "trained_agent/logs/PPO_LOGS"
+env = make_vec_env(Animal_environment, n_envs=N_CPU)
+MODELS_DIR = f"trained_agent/models/{MODEL_USED}_MODELS"
+LOGS_DIR = f"trained_agent/logs/{MODEL_USED}_LOGS"
 
 if not os.path.exists(MODELS_DIR):
     os.makedirs(MODELS_DIR)
@@ -28,24 +33,29 @@ if not os.path.exists(LOGS_DIR):
     print("> Logs dir created")
 
 
-model = PPO(
+# eval_callback = EvalCallback(eval_env, best_model_save_path='trained_agent/models/BEST_MODELS',
+#     log_path='trained_agent/logs/A2C_LOGS', eval_freq=10000,
+#     deterministic=True, render=False)
+
+
+model = DQN(
     "MlpPolicy",
     env,
     verbose=1,
-    batch_size=4200,
     tensorboard_log=LOGS_DIR,
     device="cpu",
-    n_steps=700
+    exploration_fraction=0.3
 )
 
 
 try:
     model.learn(
         total_timesteps=TIMESTEPS,
-        tb_log_name="PPO",
-        reset_num_timesteps=True
+        tb_log_name=MODEL_USED,
+        reset_num_timesteps=True,
+        progress_bar=True
     )
 except KeyboardInterrupt:
     print("Model training interrupted, model saved in the current timesteps")
 
-model.save(f"{MODELS_DIR}/PPO_MODEL")
+model.save(f"{MODELS_DIR}/{MODEL_USED}_MODEL")

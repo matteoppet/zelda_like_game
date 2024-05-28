@@ -42,9 +42,9 @@ class BaseEnv(gym.Env):
     def __init__(self, render_mode=None):
         super().__init__()
 
-        self.action_space = spaces.Discrete(5)
+        self.action_space = spaces.Discrete(4)
 
-        low = np.array([0 for _ in range(13)])
+        low = 0
         high = np.array([self.window_size[0], self.window_size[1], self.window_size[0], self.window_size[1], 3000, 9999,9999,9999,9999,9999,9999,9999,9999])
         shape = (len(high),)
         self.observation_space = spaces.Box(low=low, high=high,
@@ -198,18 +198,28 @@ class Animal_environment(BaseEnv):
         completion_reward = 5000
         crash_penalty = -4000
 
-        if self._distance_from_target <= 0:
-            reward = completion_reward
+        # reward = -self._distance_from_target * 0.5
+
+        # if target_reached:
+        #     reward += completion_reward
+
+        # if agent_crashed:
+        #     reward += crash_penalty
+
+        if self._distance_from_target < self.last_distance:
+            reward = 1 
         else:
-            if self._distance_from_target < self.last_distance:
-                reward = 1
-            else:
-                reward = -1
+            reward = -1
+
+        if target_reached:
+            reward += completion_reward
 
         if agent_crashed:
-            reward = crash_penalty
+            reward += crash_penalty
 
         self.last_distance = self._distance_from_target
+
+        # TODO: fix
 
         return reward
 

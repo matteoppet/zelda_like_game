@@ -63,16 +63,6 @@ INVENTORY = Inventory()
 
 BUTTON_BUILD_PRESSED = False
 
-def draw_sprites():
-    tree_sprites.draw(SCREEN, BACKGROUND)
-    animals_sprite.draw(SCREEN, BACKGROUND)
-    zombies_sprites.draw(SCREEN, BACKGROUND)
-    BASE_SPAWN.draw_towers(SCREEN)
-
-    for NPC in NPCs_sprite_group:
-        NPC.draw(SCREEN)
-
-
 SHOW_HOME_SCREEN = False
 HOME_SCREEN = Home_screen()
 
@@ -119,6 +109,7 @@ while running:
                 if BUTTON_INVENTORY_CLICKED:
                     if INVENTORY.rect.collidepoint(pos_mouse) or INVENTORY.rect_character.collidepoint(pos_mouse):
                         INVENTORY_OPENED = True
+                        INVENTORY.check_button_activity(pos_mouse, PLAYER)
                     else:
                         INVENTORY_OPENED = False
                         BUTTON_INVENTORY_CLICKED = False
@@ -128,8 +119,6 @@ while running:
                         INVENTORY_OPENED = True
                     else:
                         INVENTORY_OPENED = False
-                
-                print(pygame.mouse.get_pos())
 
         timer_now = pygame.time.get_ticks()
         PLAYER.actions()
@@ -158,10 +147,10 @@ while running:
             timer_trees_spawn = timer_now
 
         # NOTE: CICLE DAY/NIGHT TIMER
-        if (timer_now - timer_day_night_cicle) >= 10*1000: #240
+        if (timer_now - timer_day_night_cicle) >= 240*1000: #240
             DAY = False
             update_list_actions_to_display("Night has come!! Good luck")
-            create_zombies(55)
+            create_zombies(15)
             timer_day_night_cicle = timer_now
 
         if DAY == False:
@@ -179,9 +168,23 @@ while running:
 
         if overlapping(PLAYER, tree_sprites) or overlapping(PLAYER, animals_sprite) or overlapping(PLAYER, zombies_sprites) or overlapping(PLAYER, NPCs_sprite_group) or overlapping(PLAYER, towers_sprite_group):
             PLAYER.draw(SCREEN)
-            draw_sprites()
+            tree_sprites.draw(SCREEN, BACKGROUND)
+            animals_sprite.draw(SCREEN, BACKGROUND)
+            zombies_sprites.draw(SCREEN, BACKGROUND)
+            BASE_SPAWN.draw_towers(SCREEN)
+
+            for NPC in NPCs_sprite_group:
+                NPC.draw(SCREEN)
+
         else:
-            draw_sprites()
+            tree_sprites.draw(SCREEN, BACKGROUND)
+            animals_sprite.draw(SCREEN, BACKGROUND)
+            zombies_sprites.draw(SCREEN, BACKGROUND)
+            BASE_SPAWN.draw_towers(SCREEN)
+
+            for NPC in NPCs_sprite_group:
+                NPC.draw(SCREEN)
+
             PLAYER.draw(SCREEN)
 
 
@@ -203,10 +206,18 @@ while running:
         SCREEN.blit(inventory_text, (button_to_open_inventory.rect.x+7, button_to_open_inventory.rect.y+7))
 
         if INVENTORY_OPENED:
-            INVENTORY.draw(SCREEN, FONT_SIZE_20)
-            INVENTORY.show_character(SCREEN, PLAYER, FONT_SIZE_15, FONT_SIZE_10)
-            INVENTORY.show_items(SCREEN, FONT_SIZE_15, FONT_SIZE_10, PLAYER)
-            INVENTORY.check_click_button(PLAYER)
+            INVENTORY.functionality_inventory()
+            INVENTORY.draw_inventory(SCREEN, FONT_SIZE_15, FONT_SIZE_10)
+
+            INVENTORY.functionality_character(PLAYER)
+            INVENTORY.draw_character(SCREEN, PLAYER, FONT_SIZE_15, FONT_SIZE_10)
+
+            # INVENTORY.check_button_activity()
+
+            # INVENTORY.draw(SCREEN, FONT_SIZE_20)
+            # INVENTORY.show_character(SCREEN, PLAYER, FONT_SIZE_15, FONT_SIZE_10)
+            # INVENTORY.show_items(SCREEN, FONT_SIZE_15, FONT_SIZE_10, PLAYER)
+            # INVENTORY.check_click_button(PLAYER)
 
         for zombie in zombies_sprites:
             zombie.area_to_attack(PLAYER)
