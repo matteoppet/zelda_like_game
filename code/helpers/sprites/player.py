@@ -11,8 +11,13 @@ from helpers.utils import update_list_actions_to_display
 
 class Player(pygame.sprite.Sprite):
     EQUIPMENT = {
-        "armors": [],
-        "weapons": "Hands"
+        "armors": {
+            "helmet": None,
+            "chest": None,
+            "pants": None,
+            "shoes": None
+        },
+        "weapons": "hands"
     }
 
     # used as view area

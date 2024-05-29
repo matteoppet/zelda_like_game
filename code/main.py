@@ -229,6 +229,8 @@ while running:
 
             INVENTORY.functionality_character(PLAYER)
             INVENTORY.draw_character(SCREEN, PLAYER, FONT_SIZE_15, FONT_SIZE_10)
+            
+    
 
         for zombie in zombies_sprites:
             zombie.area_to_attack(PLAYER)

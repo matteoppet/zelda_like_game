@@ -22,13 +22,27 @@ class Target(pygame.sprite.Sprite):
         super().__init__()
         pygame.sprite.Sprite.__init__(self)
 
-        self.image = pygame.Surface((150, 150))
+        self.image = pygame.Surface((50, 50))
         self.image.fill("lightblue")
         self.rect = self.image.get_rect(center=(0,0))
 
-    def regenerate_position(self):
-        x = np.random.randint(0, 1600)
-        y = np.random.randint(0, 960)
+        self.count = 0
+
+    def regenerate_position(self, agent):
+        if self.count > 10:
+            x = np.random.randint(0, 1600)
+            y = np.random.randint(0, 960)
+        else:
+            r = True
+            while r:
+                x = np.random.randint(0, 1600)
+                y = np.random.randint(0, 960)
+
+                distance = np.linalg.norm(np.array(agent.rect.center) - np.array((x, y)))
+                if distance < 500:
+                    r = False
+
+        self.count += 1
 
         self.rect.center = (x, y)
 
@@ -56,7 +70,7 @@ class BaseEnv(gym.Env):
 
         self.AGENT = self.AGENT_TO_TRAIN
         self.step_counter = 0
-        self.max_step = 10000
+        self.max_step = 5000
 
         self.TARGET = Target()
 
@@ -91,16 +105,12 @@ class BaseEnv(gym.Env):
 
         terminated = False
         truncated = False
-        # agent_crashed = self.AGENT.collisions_in_gym(self.borders_obstacles_group)
+        agent_crashed = self.AGENT.collisions_in_gym(self.borders_obstacles_group)
         target_reached = self.AGENT.target_reached(self.TARGET.rect)
 
-        agent_crashed = False
-        if self.AGENT.rect.x < 0 or (self.AGENT.rect.x+self.AGENT.rect.width) > self.window_size[0]:
+
+        if agent_crashed:
             truncated = True
-            agent_crashed = True
-        elif self.AGENT.rect.y < 0 or (self.AGENT.rect.y+self.AGENT.rect.height) > self.window_size[1]:
-            truncated = True
-            agent_crashed = True
 
         if self.step_counter == self.max_step:
             truncated = True
@@ -204,10 +214,12 @@ class Animal_environment(BaseEnv):
         completion_reward = 0
         crash_penalty = 0
 
-        if self._distance_from_target < self.last_distance:
-            reward = 1 
-        else: 
-            reward = -1
+        # if self._distance_from_target < self.last_distance:
+        #     reward = 1 
+        # else: 
+        #     reward = -1
+
+        reward = -self._distance_from_target
 
         if target_reached: 
             completion_reward = completion_reward
@@ -231,7 +243,7 @@ class Animal_environment(BaseEnv):
         self.AGENT.rect.centery = pos_start[1]
         
         self._agent_location = pos_start
-        self.TARGET.regenerate_position()
+        self.TARGET.regenerate_position(self.AGENT)
         self._target_location = self.TARGET.rect.center
 
         self.AGENT.sensors_position_update()
