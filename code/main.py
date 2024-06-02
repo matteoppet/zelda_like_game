@@ -1,17 +1,19 @@
 import pygame
 import time
 import random
+import pygame_widgets
 
 from helpers.sprites.player import Player
-from helpers.world import World, ground_sprites, water_sprites, tree_sprites, spawn_tree, spawn_trees_sprites, spawn_base_sprites
+from helpers.windows.world import World, ground_sprites, water_sprites, tree_sprites, spawn_tree, spawn_trees_sprites, spawn_base_sprites
 from helpers.sprites.animals import spawn_animals, animals_sprite, sensors_data
-from helpers.sprites.zombie import create_zombies, zombies_sprites
+from helpers.sprites.enemies import create_enemies, enemies_sprites
 from helpers.inventory import Button_to_open_inventory, Inventory
 from functionality import *
 from helpers.utils import update_list_actions_to_display, display_action_massages, overlapping
 from helpers.sprites.NPCs import Gildermont, Murwood, NPC_base
-from helpers.home_screen import Home_screen
+from helpers.windows.home_screen import Home_screen
 from helpers.base_spawn import Base, towers_sprite_group
+from helpers.windows.character_creation import Character_creation
 
 from __init__ import SCREEN, BACKGROUND, CLOCK, FONT_SIZE_10, FONT_SIZE_15, FONT_SIZE_20, SIZE_WINDOW
 
@@ -65,10 +67,11 @@ BUTTON_INVENTORY_CLICKED = False
 INVENTORY_OPENED = False
 INVENTORY = Inventory()
 
-BUTTON_BUILD_PRESSED = False
-
-SHOW_HOME_SCREEN = False
+SHOW_HOME_SCREEN = True
 HOME_SCREEN = Home_screen()
+
+SHOW_CHARACTER_CREATION = False
+CHARACTER_SCREEN = Character_creation()
 
 running = True
 while running:
@@ -80,9 +83,31 @@ while running:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     SHOW_HOME_SCREEN = False
+                if event.key == pygame.K_c:
+                    SHOW_CHARACTER_CREATION = True
+                    SHOW_HOME_SCREEN = False
 
         SCREEN.fill("black")
         HOME_SCREEN.draw(SCREEN, SIZE_WINDOW)
+
+    elif SHOW_CHARACTER_CREATION:
+        events = pygame.event.get()
+        for event in events:
+            if event.type == pygame.QUIT:
+                running = False
+
+        SCREEN.fill("black")
+        
+        if CHARACTER_SCREEN.start_game:
+            SHOW_CHARACTER_CREATION = False
+            SHOW_HOME_SCREEN = False
+
+        if CHARACTER_SCREEN.show_second_screen:
+            list_buttons = CHARACTER_SCREEN.draw_second_screen(SCREEN)
+        else:
+            list_buttons = CHARACTER_SCREEN.draw_first_screen(SCREEN)
+
+        pygame_widgets.update(events)
 
     else:
 
@@ -95,15 +120,6 @@ while running:
                     PLAYER.actions(attack=True)
                 if event.key == pygame.K_e:
                     PLAYER.actions(eat=True)
-
-                if BUTTON_BUILD_PRESSED:
-                    if event.key == pygame.K_b:
-                        update_list_actions_to_display("Build mode disabled")
-                        BUTTON_BUILD_PRESSED = False
-                else:
-                    if event.key == pygame.K_b:
-                        update_list_actions_to_display("Build mode activated")
-                        BUTTON_BUILD_PRESSED = True
 
 
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -131,8 +147,8 @@ while running:
 
 
         if PLAYER.health <= 0:
-            # respawn
-            ...
+            PLAYER.reset()
+            update_list_actions_to_display("You have just died and lost all the inventory")
 
         timer_now = pygame.time.get_ticks()
         PLAYER.actions()
@@ -166,7 +182,7 @@ while running:
         if (timer_now - timer_day_night_cicle) >= 240*1000: #240
             DAY = False
             update_list_actions_to_display("Night has come!! Good luck")
-            create_zombies(15)
+            create_enemies(15)
             timer_day_night_cicle = timer_now
 
         if DAY == False:
@@ -182,11 +198,11 @@ while running:
 
         BASE_SPAWN.draw(SCREEN)
 
-        if overlapping(PLAYER, tree_sprites) or overlapping(PLAYER, animals_sprite) or overlapping(PLAYER, zombies_sprites) or overlapping(PLAYER, NPC_sprite_group) or overlapping(PLAYER, towers_sprite_group):
+        if overlapping(PLAYER, tree_sprites) or overlapping(PLAYER, animals_sprite) or overlapping(PLAYER, enemies_sprites) or overlapping(PLAYER, NPC_sprite_group) or overlapping(PLAYER, towers_sprite_group):
             PLAYER.draw(SCREEN)
             tree_sprites.draw(SCREEN, BACKGROUND)
             animals_sprite.draw(SCREEN, BACKGROUND)
-            zombies_sprites.draw(SCREEN, BACKGROUND)
+            enemies_sprites.draw(SCREEN, BACKGROUND)
             BASE_SPAWN.draw_towers(SCREEN)
 
             for NPC in NPC_sprite_group:
@@ -195,7 +211,7 @@ while running:
         else:
             tree_sprites.draw(SCREEN, BACKGROUND)
             animals_sprite.draw(SCREEN, BACKGROUND)
-            zombies_sprites.draw(SCREEN, BACKGROUND)
+            enemies_sprites.draw(SCREEN, BACKGROUND)
             BASE_SPAWN.draw_towers(SCREEN)
 
             for NPC in NPC_sprite_group:
@@ -230,12 +246,10 @@ while running:
             INVENTORY.functionality_character(PLAYER)
             INVENTORY.draw_character(SCREEN, PLAYER, FONT_SIZE_15, FONT_SIZE_10)
             
-    
+        for enemie in enemies_sprites:
+            enemie.area_to_attack(PLAYER)
 
-        for zombie in zombies_sprites:
-            zombie.area_to_attack(PLAYER)
-
-        BASE_SPAWN.towers_defense_action(zombies_sprites, PLAYER)
+        BASE_SPAWN.towers_defense_action(enemies_sprites, PLAYER)
         
         display_action_massages(SCREEN, FONT_SIZE_15)
 

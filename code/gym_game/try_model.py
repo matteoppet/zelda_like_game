@@ -4,8 +4,8 @@ from project.code.gym_game.envs.avoid_obstacles_movements import Animal_environm
 if __name__ == "__main__":
     env = Animal_environment(render_mode="human")
 
-    path_model = "trained_agent/models/DQN_MODELS/DQN_MODEL.zip"
-    MODEL = DQN.load(path_model)
+    path_model = "trained_agent/models/PPO_MODELS/PPO_MODEL.zip"
+    MODEL = PPO.load(path_model)
 
     obs, _info = env.reset()
     for i in range(10000):

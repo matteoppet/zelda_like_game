@@ -1,8 +1,10 @@
 import pygame
 import random
+from ..objects import Types_of_enemies
+import numpy as np
 
 
-class Zombies(pygame.sprite.Sprite):
+class Enemie(pygame.sprite.Sprite):
     
     class temp_area(pygame.sprite.Sprite):
         def __init__(self, zombie_center, zombie_size, orientation):
@@ -19,35 +21,36 @@ class Zombies(pygame.sprite.Sprite):
             self.image = pygame.Surface(zombie_size)
             self.rect = self.image.get_rect(center=pos)
 
-            
 
-
-    def __init__(self, size, pos):
+    def __init__(self, name, pos):
         super().__init__()
-        self.size = size
+        self.size = Types_of_enemies.types[name]["size"]
+        self.pos = pos
+        self.name = name
+        self.health = Types_of_enemies.types[name]["health"]
+        self.damage = Types_of_enemies.types[name]["damage"]
+        self.defense = Types_of_enemies.types[name]["defense"]
+        self.cooldown = Types_of_enemies.types[name]["cooldown"]
+        self.orientation = "right" # standard
+        self.last = pygame.time.get_ticks()
 
         self.image = pygame.Surface(self.size)
-        self.rect = self.image.get_rect(topleft=pos)
-        self.image.fill("blue")
+        self.rect = self.image.get_rect(topleft=self.pos)
+        self.image.fill("red")
 
-        self.health = 50
-        self.damage = 20
-        self.orientation = "right"
-
-        self.cooldown = 500
-        self.last = pygame.time.get_ticks()
 
 
     def area_to_attack(self, player):
-        sprite_area = self.temp_area(self.rect.center, self.size, self.orientation)
-        collision = sprite_area.rect.colliderect(player.rect)
+        distance = np.linalg.norm(np.array(self.rect.center) - np.array(player.rect.center))
 
-        if collision:
+        if distance < 25:
+            print(distance, "attack")
+
             now = pygame.time.get_ticks()
-            if now - self.last >= self.cooldown:
+            if now-self.last >= self.cooldown:
                 self.last = now
-                player.health -= self.damage
-                print("Damage from zombies")
+
+                player.health -= self.damage - player.defense
 
 
     def move(self, action):
@@ -66,8 +69,8 @@ class Zombies(pygame.sprite.Sprite):
             self.orientation = "down"
 
 
-zombies_sprites = pygame.sprite.Group()
-zombies_spawns = [
+enemies_sprites = pygame.sprite.Group()
+enemies_spawns = [
     (23, 542),
     (782, 28),
     (1435, 298),
@@ -75,12 +78,16 @@ zombies_spawns = [
     (692, 431)
 ]
 
-def create_zombies(n_zombies_to_spawn):
-    for _ in range(n_zombies_to_spawn):
-        random_spawn = random.choice(zombies_spawns)
 
+def create_enemies(n_enemies_to_spawn):
+    for _ in range(n_enemies_to_spawn):
+        # pos random
+        random_spawn = random.choice(enemies_spawns)
         random_x = random.randrange(random_spawn[0]-20, random_spawn[0]+20)
         random_y = random.randrange(random_spawn[1]-20, random_spawn[1]+20)
 
-        zombie_sprite = Zombies((10, 15), (random_x, random_y))
-        zombies_sprites.add(zombie_sprite)
+        name_zombies = [k for k in Types_of_enemies.types.keys()]
+        random_enemies = random.choice(name_zombies)
+
+        enemie_sprite = Enemie(random_enemies, (random_x, random_y))
+        enemies_sprites.add(enemie_sprite)

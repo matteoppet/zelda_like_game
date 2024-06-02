@@ -69,7 +69,7 @@ class Inventory:
         
         # draw items
         start_y_pos_items = self.rect_character.y+20
-        for class_type, items in player.EQUIPMENT.items():
+        for class_type, items in player.CHARACTER_INFO["equipment"].items():
 
             if isinstance(items, dict): # verify that items is a dictionary
                 class_type_text = font.render(f"{class_type}: ", True, "white")
@@ -123,7 +123,6 @@ class Inventory:
                     self.equip_system(key, player)
 
         elif self.rect_character.collidepoint(point_mouse):
-            print(self.character_unequip_buttons)
             for key, button in self.character_unequip_buttons.items():
                 if button.collidepoint(point_mouse):
                     self.unequip_system(key, player)
@@ -136,10 +135,10 @@ class Inventory:
             try:
                 if class_item == "armors":
                     item = items[0]
-                    player.EQUIPMENT["armors"][item] = item
+                    player.CHARACTER_INFO["equipment"]["armors"][item] = item
                 else:
                     item = items[0]
-                    player.EQUIPMENT[class_item] = item
+                    player.CHARACTER_INFO["equipment"][class_item] = item
 
                 self.INVENTORY[class_item].remove(item)
             except IndexError: pass
@@ -147,18 +146,14 @@ class Inventory:
     
     def unequip_system(self, value, player):
 
-        if value in player.EQUIPMENT["armors"]:
-            if player.EQUIPMENT["armors"][value] != None:
-                player.EQUIPMENT["armors"][value] = None
+        if value in player.CHARACTER_INFO["equipment"]["armors"]:
+            if player.CHARACTER_INFO["equipment"]["armors"][value] != None:
+                player.CHARACTER_INFO["equipment"]["armors"][value] = None
                 self.INVENTORY["armors"].append(value)
 
         else:
-            item = player.EQUIPMENT[value]
-            player.EQUIPMENT[value] = "hands"
+            item = player.CHARACTER_INFO["equipment"][value]
+            player.CHARACTER_INFO["equipment"][value] = "hands"
 
             if item != "hands":
                 self.INVENTORY[value].append(item)
-
-
-
-# fix unequip buttons

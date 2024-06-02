@@ -1,23 +1,35 @@
 import pygame
 from helpers.sprites.animals import animals_sprite
-from helpers.world import water_sprites, tree_sprites
-from helpers.sprites.zombie import zombies_sprites
+from helpers.windows.world import water_sprites, tree_sprites
+from helpers.sprites.enemies import enemies_sprites
 from helpers.inventory import Inventory
 from functionality import COUNT_OBJECTS_ON_MAPS
 from ..objects import Weapons
-from helpers.building import Build
 
 from helpers.utils import update_list_actions_to_display
 
 class Player(pygame.sprite.Sprite):
-    EQUIPMENT = {
-        "armors": {
-            "helmet": None,
-            "chest": None,
-            "pants": None,
-            "shoes": None
+    CHARACTER_INFO = {
+        "equipment": {
+            "armors": {
+                "helmet": None,
+                "chest": None,
+                "pants": None,
+                "shoes": None
+            },
+            "weapons": "hands"
         },
-        "weapons": "hands"
+
+        "skills": {
+            "strength": 0,
+            "constitution": 0,
+            "intelligence": 0,
+            "charisma": 0
+        },
+
+        "XP": 0,
+
+        "class": None,
     }
 
     # used as view area
@@ -43,13 +55,14 @@ class Player(pygame.sprite.Sprite):
         self.size = (15, 25)
 
         self.image = pygame.Surface(self.size)
+        self.pos = pos
         self.rect = self.image.get_rect(topleft=pos)
         self.image.fill("black")
 
         self.old_rect = self.rect.copy()
 
         self.health = 100
-        self.damage = 15 # punch
+        self.defense = 5
 
         self.food = 0
 
@@ -81,7 +94,7 @@ class Player(pygame.sprite.Sprite):
             self.orientation = "right"
     
         if attack:
-            self.cooldown = Weapons.types[self.EQUIPMENT["weapons"]]["velocity"] * 100
+            self.cooldown = Weapons.types[self.CHARACTER_INFO["equipment"]["weapons"]]["velocity"] * 100
             now_timing = pygame.time.get_ticks()
             if now_timing - self.last_timing >= self.cooldown:
                 self.attack()
@@ -92,8 +105,7 @@ class Player(pygame.sprite.Sprite):
         if eat:
             self.eat()
 
-
-    
+ 
     def eat(self):
         food = Inventory.INVENTORY["food"]
 
@@ -150,26 +162,27 @@ class Player(pygame.sprite.Sprite):
     def attack(self):
         temp_sprite = self.temp_rect(self.rect.center, self.orientation, self.size)
         collision_animals = pygame.sprite.spritecollide(temp_sprite, animals_sprite, False)
-        collision_zombies = pygame.sprite.spritecollide(temp_sprite, zombies_sprites, False)
+        collision_enemies = pygame.sprite.spritecollide(temp_sprite, enemies_sprites, False)
         collision_trees = pygame.sprite.spritecollide(temp_sprite, tree_sprites, False)
 
         if collision_animals:
             for sprite_animal in collision_animals:
-                sprite_animal.health -= Weapons.types[self.EQUIPMENT["weapons"]]["damage"]
+                sprite_animal.health -= Weapons.types[self.CHARACTER_INFO["equipment"]["weapons"]]["damage"]
 
                 if self.kill_sprite(sprite_animal, "Animal killed, +5 of food gained"):
                     Inventory.INVENTORY["food"] += 5
                     COUNT_OBJECTS_ON_MAPS["animals"] -= 1
 
-        if collision_zombies:
-            for sprite_zombie in collision_zombies:
-                sprite_zombie.health -= Weapons.types[self.EQUIPMENT["weapons"]]["damage"]
+        if collision_enemies:
+            for sprite_enemie in collision_enemies:
+                inflicted_damage = Weapons.types[self.CHARACTER_INFO["equipment"]["weapons"]]["damage"] - sprite_enemie.defense
+                sprite_enemie.health -= inflicted_damage
 
-                self.kill_sprite(sprite_zombie, "Zombie killed")
+                self.kill_sprite(sprite_enemie, "Enemie killed")
 
         if collision_trees:
             for sprite_tree in collision_trees:
-                sprite_tree.health -= Weapons.types[self.EQUIPMENT["weapons"]]["damage_trees"]
+                sprite_tree.health -= Weapons.types[self.CHARACTER_INFO["equipment"]["weapons"]]["damage_trees"]
 
                 if self.kill_sprite(sprite_tree, "Tree cutted, +5 of wood"):
                     Inventory.INVENTORY["wood"] += 5
@@ -178,3 +191,8 @@ class Player(pygame.sprite.Sprite):
 
     def draw(self, screen):
         screen.blit(self.image, self.rect)
+
+
+    def reset(self):
+        self.rect.center = self.pos
+        self.health = 100

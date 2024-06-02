@@ -214,12 +214,10 @@ class Animal_environment(BaseEnv):
         completion_reward = 0
         crash_penalty = 0
 
-        # if self._distance_from_target < self.last_distance:
-        #     reward = 1 
-        # else: 
-        #     reward = -1
-
-        reward = -self._distance_from_target
+        if self._distance_from_target < self.last_distance:
+            reward = 1 
+        else: 
+            reward = -1
 
         if target_reached: 
             completion_reward = completion_reward

@@ -1,27 +1,25 @@
 from project.code.gym_game.envs.avoid_obstacles_movements import Animal_environment
-from stable_baselines3.common.vec_env import DummyVecEnv
-from stable_baselines3.common.env_util import make_vec_env
 
 
 # def make_env():
 #     return Animal_environment(render_mode=None, obstacles=False)
 
-n_cpu = 6
-env = make_vec_env(Animal_environment, n_envs=n_cpu)
+# n_cpu = 6
+# env = make_vec_env(Animal_environment, n_envs=n_cpu)
+env = Animal_environment(render_mode=None, obstacles=False)
 
 
 from stable_baselines3 import DQN, PPO, A2C
 import os
 
-MODEL_USED = "DQN"
+MODEL_USED = "PPO"
 path_model = "trained_agent/models/" + f"{MODEL_USED}_MODELS" + f"/{MODEL_USED}_MODEL"
 
-model = DQN.load(
+model = PPO.load(
     path=path_model,
     env=env,
-    device="cpu",
+    device="cpu"
 )
-
 
 MODELS_DIR = f"trained_agent/models/{MODEL_USED}_MODELS"
 LOGS_DIR = f"trained_agent/logs/{MODEL_USED}_LOGS"
@@ -35,7 +33,7 @@ if not os.path.exists(LOGS_DIR):
     print("> Logs dir created")
 
 
-TIMESTEPS = 10000000
+TIMESTEPS = 20000000
 try:
     model.learn(
         total_timesteps=TIMESTEPS,

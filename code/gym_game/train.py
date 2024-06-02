@@ -14,12 +14,13 @@ RENDER = None
 MODEL_USED = "PPO"
 
 # def make_env():
-#     return Animal_environment(render_mode=None, obstacles=False)
+#     return Animal_environment(render_mode="human", obstacles=False)
 
 # env = DummyVecEnv([make_env for _ in range(N_CPU)])
 # eval_env = DummyVecEnv([make_env for _ in range(N_CPU)])
+env = Animal_environment(render_mode=None, obstacles=False)
 
-env = make_vec_env(Animal_environment, n_envs=N_CPU)
+# env = make_vec_env(Animal_environment, n_envs=N_CPU)
 MODELS_DIR = f"trained_agent/models/{MODEL_USED}_MODELS"
 LOGS_DIR = f"trained_agent/logs/{MODEL_USED}_LOGS"
 
@@ -44,6 +45,7 @@ model = PPO(
     verbose=1,
     tensorboard_log=LOGS_DIR,
     device="cpu",
+    n_steps=5000
 )
 
 
