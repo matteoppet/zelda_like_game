@@ -1,10 +1,10 @@
 import pygame
-from helpers.objects import *
 import random
 import numpy as np
-from ..inventory import Inventory
-from ..utils import update_list_actions_to_display
-
+from ...inventory import Inventory
+from ...utils import update_list_actions_to_display
+from ...player import Player
+from ...data import armor_data, weapon_data
 # Gildermont = vendor weapons
 # Murwood = vendor armors
 
@@ -13,7 +13,7 @@ class NPC_base:
     def __init__(self):
         self.buttons_deal = {}
 
-    def interaction_section(self, pos_mouse):
+    def interaction_section(self, pos_mouse, vendor_type_sell):
         items_in_exchange = self.items_in_exchange()
         for key, value in self.buttons_deal.items():
             button_clicked = value.collidepoint(pos_mouse)
@@ -22,14 +22,19 @@ class NPC_base:
                 item_to_buy = key
                 cost = items_in_exchange[key]["cost"]
                 value = items_in_exchange[key]["type"]
+                
+                if vendor_type_sell == "weapons":
+                    if Player.CHARACTER_INFO["skills"]["strength"] >= weapon_data[item_to_buy]["skill_required"]["strength"]:
 
-                if Inventory.INVENTORY[value] >= cost:
-                    Inventory.INVENTORY[value] -= cost
-                    Inventory.INVENTORY[self.type].append(item_to_buy)
-                    
-                    update_list_actions_to_display(f"You have bought: {item_to_buy} for {cost} {value}")
-                else:
-                    update_list_actions_to_display(f"You don't have enought {value} for: {item_to_buy}")
+                        if Inventory.INVENTORY[value] >= cost:
+                            Inventory.INVENTORY[value] -= cost
+                            Inventory.INVENTORY[self.type].append(item_to_buy)
+                            
+                            update_list_actions_to_display(f"You have bought: {item_to_buy} for {cost} {value}")
+                        else:
+                            update_list_actions_to_display(f"You don't have enought {value} for: {item_to_buy}")
+                    else:
+                        update_list_actions_to_display(f"You don't have enough skill level, current:{Player.CHARACTER_INFO['skills']['strength']}, required:{weapon_data[item_to_buy]['skill_required']['strength']}")
 
 
 
@@ -93,13 +98,13 @@ class Gildermont(NPC_base, pygame.sprite.Sprite):
         self.dict_sell = self.reload_items_on_sale()
 
     def reload_items_on_sale(self):
-        list_items_avaible_to_sell = [key for key in Weapons.types.keys()]
+        list_items_avaible_to_sell = [key for key in weapon_data.keys()]
         dict_items_on_sale = {}
 
         count = 0
         while count <= 2:
             random_item_picked = random.choice(list_items_avaible_to_sell)
-            dict_items_on_sale[random_item_picked] = {"cost": Weapons.types[random_item_picked]["cost"], "type": Weapons.types[random_item_picked]["type"]}
+            dict_items_on_sale[random_item_picked] = {"cost": weapon_data[random_item_picked]["cost"], "type": weapon_data[random_item_picked]["type"]}
             count += 1
 
         return dict_items_on_sale
@@ -130,13 +135,13 @@ class Murwood(NPC_base, pygame.sprite.Sprite):
         self.dict_sell = self.reload_items_on_sale()
 
     def reload_items_on_sale(self):
-        list_items_avaible_to_sell = [key for key in Armors.types.keys()]
+        list_items_avaible_to_sell = [key for key in armor_data.keys()]
         dict_items_on_sale = {}
 
         count = 0
         while count <= 2:
             random_item_picked = random.choice(list_items_avaible_to_sell)
-            dict_items_on_sale[random_item_picked] = {"cost": Armors.types[random_item_picked]["cost"], "type": Armors.types[random_item_picked]["type"]}
+            dict_items_on_sale[random_item_picked] = {"cost": armor_data[random_item_picked]["cost"], "type": armor_data[random_item_picked]["type"]}
             count += 1
 
         return dict_items_on_sale
