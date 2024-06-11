@@ -1,8 +1,11 @@
 import pytmx
 import pygame
-from project.code.player import Player
-from project.code.utils import import_layout_csv, import_folder
+from player import Player
+from utils import import_layout_csv, import_folder
 import random
+import numpy as np
+from settings import *
+from animals import Animal
 
 class Tile(pygame.sprite.Sprite):
     def __init__(self, surface, pos, groups, type, layout_level):
@@ -24,16 +27,50 @@ class Tree(pygame.sprite.Sprite):
 
         self.image = pygame.image.load("../assets/tileset/Resources/Trees/single_tree.png")
         self.rect = self.image.get_rect(bottomleft=pos)
-        self.old_rect = self.rect.copy()
+
+        self.rect.x -= 64
 
         self.hitbox = self.rect.inflate(-155, -40)
-
         self.hitbox.y += 130
-        self.hitbox.height -= 125
+        self.hitbox.height -= 124
 
         self.sprite_type = "tree"
 
-        self.layout_level = layout_level
+        self.layout_level = 3
+        
+
+class Bushes(pygame.sprite.Sprite):
+    def __init__(self, surface, pos, groups):
+        super().__init__(groups)
+
+        self.image = surface
+        self.rect = self.image.get_rect(bottomleft=pos)
+        
+        self.rect.x -= 32
+        self.rect.y += 10
+
+        self.hitbox = self.rect.inflate(-20,-30)
+        
+        self.sprite_type = "bushes"
+
+        self.layout_level = 1
+
+
+class Rocks(pygame.sprite.Sprite):
+    def __init__(self, surface, pos, groups):
+        super().__init__(groups)
+
+        self.image = surface
+        self.rect = self.image.get_rect(bottomleft=pos)
+
+        self.rect.x -= 32
+        self.rect.y += 10
+
+        self.hitbox = self.rect.inflate(-25,-25)
+        
+        self.sprite_type = "rocks"
+
+        self.layout_level = 1
 
 
 class World:
@@ -48,7 +85,8 @@ class World:
         
         self.create_map()
 
-        self.player = Player((100, 100), self.obstacle_sprites, self.visible_sprites)
+        get_random_tile_spawn_player = random.choice(self.list_ground_tiles)
+        self.player = Player(get_random_tile_spawn_player.center, self.obstacle_sprites, self.visible_sprites)
 
 
     def create_map(self):
@@ -57,16 +95,10 @@ class World:
             "map_boundaries": import_layout_csv("../maps/test_map/csv/map_boundaries.csv"),
         }
 
-        graphic = {
-            "grass": import_folder("../assets/tileset/terrain_single_images"),
-        }
-
         for style, layout in layout.items():
             for row_index, row in enumerate(layout):
                 for col_index, col in enumerate(row):
                     if col != "-1":
-                        TILESET_SIZE = 64
-
                         x = col_index * TILESET_SIZE
                         y = row_index * TILESET_SIZE
 
@@ -77,14 +109,52 @@ class World:
                             self.list_ground_tiles.append(pygame.Rect(x, y, TILESET_SIZE, TILESET_SIZE))
 
         self.generate_trees()
+        self.generate_bushes()
+        self.generate_rocks()
+        self.generate_animals()
 
 
     def generate_trees(self):
-        random_number_to_generate = random.randint(10, 20)
+        random_number_to_generate = random.randint(80, 90)
+
         for _ in range(random_number_to_generate):
             get_random_tile = random.choice(self.list_ground_tiles)
-            Tree(get_random_tile.center, [self.visible_sprites, self.obstacle_sprites], 2)
+            Tree(get_random_tile.bottomleft, [self.visible_sprites, self.obstacle_sprites], 2)
 
+
+    def generate_bushes(self):
+        random_number_to_generate = random.randint(50, 60)
+    
+        for _ in range(random_number_to_generate):
+            get_random_tile = random.choice(self.list_ground_tiles)
+            random_number_image = random.randint(7, 11)
+
+
+            image_to_load = f"../assets/tileset/Deco/{random_number_image:02d}.png"
+            image_surface = pygame.image.load(image_to_load)
+
+            Bushes(image_surface, get_random_tile.center, [self.visible_sprites])
+
+
+    def generate_rocks(self):
+        random_number_to_generate = random.randint(5, 10)
+        
+        for _ in range(random_number_to_generate):
+            get_random_tile = random.choice(self.list_ground_tiles)
+            random_number_image = random.randint(4, 6)
+
+            path_image_to_load = f"../assets/tileset/Deco/{random_number_image:02d}.png"
+            image_surface = pygame.image.load(path_image_to_load)
+
+            Rocks(image_surface, get_random_tile.center, [self.visible_sprites, self.obstacle_sprites])
+
+    
+    def generate_animals(self):
+        random_number_to_generate = random.randint(60, 70)
+
+        for _ in range(random_number_to_generate):
+            get_random_tile = random.choice(self.list_ground_tiles)
+            Animal(get_random_tile.center, [self.visible_sprites, self.obstacle_sprites])
 
     def draw_map(self):
         self.visible_sprites.custom_draw(self.player)
@@ -110,16 +180,20 @@ class YSortCameraGroup(pygame.sprite.Group):
         floor_offset_pos = self.floor_rect.topleft - self.offset
         self.display_surface.blit(self.floor_surf, floor_offset_pos)
 
+        sorted_sprites_by_y = sorted(self.sprites(), key=lambda sprite: sprite.hitbox.bottomleft[1])
 
-        for sprite in self.sprites():
-            if sprite.sprite_type != "invisible":
-                offset_position = sprite.rect.topleft - self.offset
+        for sprite in sorted_sprites_by_y:
 
+            try:
                 offset_hitbox = sprite.hitbox.topleft - self.offset
                 new_rect = pygame.Rect(offset_hitbox, sprite.hitbox.size)
                 pygame.draw.rect(self.display_surface, "red", new_rect)
+            except AttributeError: pass
+
+            offset_position = sprite.rect.topleft - self.offset
+            self.display_surface.blit(sprite.image, offset_position)
+
                 
-                self.display_surface.blit(sprite.image, offset_position)
 
 
 

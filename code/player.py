@@ -1,6 +1,6 @@
 import pygame
-from .data import weapon_data 
-from .utils import tiles
+from data import weapon_data 
+from utils import tiles
 
 class Player(pygame.sprite.Sprite):
     data = {
@@ -37,7 +37,7 @@ class Player(pygame.sprite.Sprite):
         self.hitbox = self.rect.inflate(-40, -50)
         self.hitbox.y += 25
     
-        self.speed = 1
+        self.speed = 1.3
         self.direction = pygame.math.Vector2()
         self.orientation = "down"
         self.status = "idle"

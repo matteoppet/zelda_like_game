@@ -3,8 +3,8 @@ import numpy as np
 from gymnasium import spaces
 import pygame
 
-from project.code.helpers.sprites.animals import sensors_data
-from project.code.helpers.sprites.animals import Base_animal
+from project.code.animals import sensors_data
+from project.code.animals import Base_animal
 
 ############### USEFULL CLASS
 class Obstacles_sprites(pygame.sprite.Sprite):

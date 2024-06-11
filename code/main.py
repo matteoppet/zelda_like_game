@@ -57,7 +57,7 @@ class Game:
                     running = False
                     pygame.quit()
 
-            self.screen.fill("light blue")
+            self.screen.fill("#48acac")
             WORLD.draw_map()
 
             fps_text = font.render(f"FPS: {self.clock.get_fps()}", False, "black")
